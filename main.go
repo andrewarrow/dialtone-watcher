@@ -99,6 +99,7 @@ func printSummary() error {
 	}
 	fmt.Printf("Polls completed: %d\n", summary.PollCount)
 	fmt.Printf("Tracked processes: %d\n", summary.TrackedProcessCount)
+	fmt.Printf("Tracked domains: %d\n", summary.TrackedDomainCount)
 	fmt.Printf(
 		"Hardware: %s on %s (%s, %.1f GB RAM, %d logical cores)\n",
 		summary.Hardware.Hostname,
@@ -108,20 +109,60 @@ func printSummary() error {
 		summary.Hardware.CPULogicalCores,
 	)
 
-	if summary.TopProcess.PID > 0 {
-		fmt.Printf(
-			"Interesting process: pid=%d name=%s cpu=%.2f%% rss=%.1f MB seen=%d polls\n",
-			summary.TopProcess.PID,
-			summary.TopProcess.Name,
-			summary.TopProcess.CPUPercent,
-			summary.TopProcess.MemoryRSSMB,
-			summary.TopProcess.PollsSeen,
-		)
+	topProcesses := summary.TopProcesses
+	if len(topProcesses) == 0 && summary.TopProcess.PID > 0 {
+		topProcesses = []watcher.ProcessSnapshot{summary.TopProcess}
+	}
+
+	if len(topProcesses) > 0 {
+		fmt.Println("Interesting processes:")
+		for i, proc := range topProcesses {
+			fmt.Printf(
+				"  %d. pid=%d name=%s cpu=%.2f%% rss=%.1f MB seen=%d polls\n",
+				i+1,
+				proc.PID,
+				proc.Name,
+				proc.CPUPercent,
+				proc.MemoryRSSMB,
+				proc.PollsSeen,
+			)
+		}
 	} else {
-		fmt.Println("Interesting process: none recorded yet")
+		fmt.Println("Interesting processes: none recorded yet")
+	}
+
+	if len(summary.TopDomains) > 0 {
+		fmt.Println("Interesting domains:")
+		for i, domain := range summary.TopDomains {
+			fmt.Printf(
+				"  %d. domain=%s rx=%s tx=%s seen=%d polls\n",
+				i+1,
+				domain.Domain,
+				formatBytes(domain.RXBytes),
+				formatBytes(domain.TXBytes),
+				domain.PollsSeen,
+			)
+		}
+	} else {
+		fmt.Println("Interesting domains: none recorded yet")
 	}
 
 	return nil
+}
+
+func formatBytes(value uint64) string {
+	const unit = 1024
+	if value < unit {
+		return fmt.Sprintf("%d B", value)
+	}
+
+	divisor, exp := uint64(unit), 0
+	for n := value / unit; n >= unit; n /= unit {
+		divisor *= unit
+		exp++
+	}
+
+	return fmt.Sprintf("%.1f %ciB", float64(value)/float64(divisor), "KMGTPE"[exp])
 }
 
 func printHelp() {

@@ -1,0 +1,1 @@
+change the summary to list the top 6 most interesting pids vs just 1. Also add another poll to listen for incoming and outgoing network packets and store in memory data on domains hit and the rx and tx amounts. Display a top 6 most interesting domains as well
