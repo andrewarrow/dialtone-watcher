@@ -38,6 +38,11 @@ func startReverseLookupWorker(svc *service) chan<- string {
 			if record := svc.domains[ip]; record != nil {
 				record.DisplayName = name
 			}
+			for _, record := range svc.connections {
+				if record.Domain == ip {
+					record.DisplayName = name
+				}
+			}
 			_ = svc.persist(true)
 			svc.mu.Unlock()
 		}

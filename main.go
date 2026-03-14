@@ -100,6 +100,7 @@ func printSummary() error {
 	fmt.Printf("Polls completed: %d\n", summary.PollCount)
 	fmt.Printf("Tracked processes: %d\n", summary.TrackedProcessCount)
 	fmt.Printf("Tracked domains: %d\n", summary.TrackedDomainCount)
+	fmt.Printf("Tracked connections: %d\n", summary.TrackedConnectionCount)
 	fmt.Printf(
 		"Hardware: %s on %s (%s, %.1f GB RAM, %d logical cores)\n",
 		summary.Hardware.Hostname,
@@ -149,6 +150,33 @@ func printSummary() error {
 		}
 	} else {
 		fmt.Println("Interesting domains: none recorded yet")
+	}
+
+	if len(summary.TopConnections) > 0 {
+		fmt.Println("Interesting connections:")
+		for i, connection := range summary.TopConnections {
+			label := connection.Domain
+			if connection.DisplayName != "" {
+				label = fmt.Sprintf("%s ip=%s", connection.DisplayName, connection.Domain)
+			}
+			processName := connection.ProcessName
+			if processName == "" {
+				processName = "unknown"
+			}
+			fmt.Printf(
+				"  %d. pid=%d name=%s protocol=%s domain=%s rx=%s tx=%s seen=%d polls\n",
+				i+1,
+				connection.PID,
+				processName,
+				connection.Protocol,
+				label,
+				formatBytes(connection.RXBytes),
+				formatBytes(connection.TXBytes),
+				connection.PollsSeen,
+			)
+		}
+	} else {
+		fmt.Println("Interesting connections: none recorded yet")
 	}
 
 	return nil

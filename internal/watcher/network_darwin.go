@@ -21,8 +21,10 @@ type networkConnectionSample struct {
 }
 
 type networkObservation struct {
-	Domain string
-	Sample networkConnectionSample
+	PID      int32
+	Domain   string
+	Protocol string
+	Sample   networkConnectionSample
 }
 
 func collectNetworkSamples() (map[string]networkObservation, error) {
@@ -75,15 +77,17 @@ func collectNetworkSamples() (map[string]networkObservation, error) {
 			continue
 		}
 
-		domain, sample, ok := parseConnectionRow(first, record)
+		domain, port, sample, ok := parseConnectionRow(first, record)
 		if !ok {
 			continue
 		}
 
 		key := fmt.Sprintf("%d|%s", currentProcessID, first)
 		observations[key] = networkObservation{
-			Domain: domain,
-			Sample: sample,
+			PID:      currentProcessID,
+			Domain:   domain,
+			Protocol: inferProtocol(port),
+			Sample:   sample,
 		}
 	}
 
@@ -107,31 +111,33 @@ func parseProcessRow(value string) (int32, bool) {
 	return int32(pid), true
 }
 
-func parseConnectionRow(spec string, record []string) (string, networkConnectionSample, bool) {
+func parseConnectionRow(spec string, record []string) (string, uint16, networkConnectionSample, bool) {
 	var sample networkConnectionSample
 
 	if len(record) < 4 || !strings.Contains(spec, "<->") {
-		return "", sample, false
+		return "", 0, sample, false
 	}
 
 	parts := strings.SplitN(spec, " ", 2)
 	if len(parts) != 2 {
-		return "", sample, false
+		return "", 0, sample, false
 	}
 	endpoints := strings.SplitN(parts[1], "<->", 2)
 	if len(endpoints) != 2 {
-		return "", sample, false
+		return "", 0, sample, false
 	}
 
 	domain := normalizeRemoteHost(endpoints[1])
 	if domain == "" {
-		return "", sample, false
+		return "", 0, sample, false
 	}
+
+	port := parseEndpointPort(endpoints[1])
 
 	sample.RXBytes = parseUint(record[2])
 	sample.TXBytes = parseUint(record[3])
 
-	return domain, sample, true
+	return domain, port, sample, true
 }
 
 func normalizeRemoteHost(endpoint string) string {
@@ -182,6 +188,54 @@ func parseUint(value string) uint64 {
 		return 0
 	}
 	return parsed
+}
+
+func parseEndpointPort(endpoint string) uint16 {
+	host := strings.TrimSpace(endpoint)
+	if host == "" {
+		return 0
+	}
+
+	if idx := strings.LastIndex(host, ":"); idx != -1 && isDigits(host[idx+1:]) {
+		port, err := strconv.ParseUint(host[idx+1:], 10, 16)
+		if err == nil {
+			return uint16(port)
+		}
+	}
+
+	if idx := strings.LastIndex(host, "."); idx != -1 && isDigits(host[idx+1:]) && strings.Contains(host[:idx], ":") {
+		port, err := strconv.ParseUint(host[idx+1:], 10, 16)
+		if err == nil {
+			return uint16(port)
+		}
+	}
+
+	return 0
+}
+
+func inferProtocol(port uint16) string {
+	switch port {
+	case 22:
+		return "SSH"
+	case 53:
+		return "DNS"
+	case 80:
+		return "HTTP"
+	case 443:
+		return "HTTPS"
+	case 853:
+		return "DNS-over-TLS"
+	case 3306:
+		return "MySQL"
+	case 5432:
+		return "Postgres"
+	case 6379:
+		return "Redis"
+	case 784, 4433:
+		return "QUIC"
+	default:
+		return "TCP"
+	}
 }
 
 func isDigits(value string) bool {

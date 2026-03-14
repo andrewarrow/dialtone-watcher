@@ -8,8 +8,10 @@ type networkConnectionSample struct {
 }
 
 type networkObservation struct {
-	Domain string
-	Sample networkConnectionSample
+	PID      int32
+	Domain   string
+	Protocol string
+	Sample   networkConnectionSample
 }
 
 func collectNetworkSamples() (map[string]networkObservation, error) {

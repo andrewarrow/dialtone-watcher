@@ -2,6 +2,7 @@ package watcher
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -25,12 +26,18 @@ type domainRecord struct {
 	LastSeen time.Time `json:"-"`
 }
 
+type connectionRecord struct {
+	ConnectionSnapshot
+	LastSeen time.Time `json:"-"`
+}
+
 type service struct {
 	mu             sync.Mutex
 	hardware       HardwareProfile
 	polls          uint64
 	pids           map[int32]*processRecord
 	domains        map[string]*domainRecord
+	connections    map[string]*connectionRecord
 	networkSamples map[string]networkConnectionSample
 	lookupCache    map[string]reverseLookupResult
 	lookupPending  map[string]bool
@@ -65,6 +72,7 @@ func RunDaemon() error {
 		hardware:       hardware,
 		pids:           make(map[int32]*processRecord),
 		domains:        make(map[string]*domainRecord),
+		connections:    make(map[string]*connectionRecord),
 		networkSamples: make(map[string]networkConnectionSample),
 		lookupCache:    make(map[string]reverseLookupResult),
 		lookupPending:  make(map[string]bool),
@@ -129,15 +137,17 @@ func (s *service) persist(running bool) error {
 	}
 
 	summary := Summary{
-		PID:                 summaryPID,
-		Running:             running,
-		PollCount:           s.polls,
-		TrackedProcessCount: len(s.pids),
-		Hardware:            s.hardware,
-		TopProcess:          s.topProcess(),
-		TopProcesses:        s.topProcesses(6),
-		TrackedDomainCount:  len(s.domains),
-		TopDomains:          s.topDomains(60),
+		PID:                    summaryPID,
+		Running:                running,
+		PollCount:              s.polls,
+		TrackedProcessCount:    len(s.pids),
+		Hardware:               s.hardware,
+		TopProcess:             s.topProcess(),
+		TopProcesses:           s.topProcesses(6),
+		TrackedDomainCount:     len(s.domains),
+		TrackedConnectionCount: len(s.connections),
+		TopDomains:             s.topDomains(60),
+		TopConnections:         s.topConnections(20),
 	}
 
 	return writeSummary(summary)
@@ -192,6 +202,22 @@ func (s *service) pollDomainsLocked(observations map[string]networkObservation, 
 		record.TXBytes += sample.TXBytes
 		record.LastSeen = now
 		record.PollsSeen++
+
+		connectionKey := observedConnectionKey(observation)
+		connection := s.connections[connectionKey]
+		if connection == nil {
+			connection = &connectionRecord{}
+			connection.PID = observation.PID
+			connection.Domain = observation.Domain
+			connection.Protocol = observation.Protocol
+			s.connections[connectionKey] = connection
+		}
+		connection.ProcessName = s.processNameLocked(observation.PID)
+		connection.DisplayName = record.DisplayName
+		connection.RXBytes += sample.RXBytes
+		connection.TXBytes += sample.TXBytes
+		connection.LastSeen = now
+		connection.PollsSeen++
 	}
 
 	for key := range s.networkSamples {
@@ -203,6 +229,12 @@ func (s *service) pollDomainsLocked(observations map[string]networkObservation, 
 	for domain, record := range s.domains {
 		if now.Sub(record.LastSeen) > pollInterval*12 {
 			delete(s.domains, domain)
+		}
+	}
+
+	for key, record := range s.connections {
+		if now.Sub(record.LastSeen) > pollInterval*12 {
+			delete(s.connections, key)
 		}
 	}
 }
@@ -299,6 +331,72 @@ func shouldIncludeDomainRecord(record *domainRecord) bool {
 	}
 
 	return !isPublicIP(record.Domain) && normalizeResolvedHost(record.Domain) != ""
+}
+
+func (s *service) topConnections(limit int) []ConnectionSnapshot {
+	if len(s.connections) == 0 {
+		return nil
+	}
+
+	records := make([]*connectionRecord, 0, len(s.connections))
+	for _, record := range s.connections {
+		if !shouldIncludeConnectionRecord(record) {
+			continue
+		}
+		records = append(records, record)
+	}
+
+	if len(records) == 0 {
+		return nil
+	}
+
+	sort.Slice(records, func(i, j int) bool {
+		leftTotal := records[i].RXBytes + records[i].TXBytes
+		rightTotal := records[j].RXBytes + records[j].TXBytes
+		if leftTotal == rightTotal {
+			if records[i].PollsSeen == records[j].PollsSeen {
+				if records[i].ProcessName == records[j].ProcessName {
+					return records[i].Domain < records[j].Domain
+				}
+				return records[i].ProcessName < records[j].ProcessName
+			}
+			return records[i].PollsSeen > records[j].PollsSeen
+		}
+		return leftTotal > rightTotal
+	})
+
+	if limit > len(records) {
+		limit = len(records)
+	}
+
+	top := make([]ConnectionSnapshot, 0, limit)
+	for _, record := range records[:limit] {
+		top = append(top, record.ConnectionSnapshot)
+	}
+	return top
+}
+
+func shouldIncludeConnectionRecord(record *connectionRecord) bool {
+	if record == nil {
+		return false
+	}
+
+	if normalizeResolvedHost(record.DisplayName) != "" && !isPublicIP(record.DisplayName) {
+		return true
+	}
+
+	return !isPublicIP(record.Domain) && normalizeResolvedHost(record.Domain) != ""
+}
+
+func observedConnectionKey(observation networkObservation) string {
+	return fmt.Sprintf("%d|%s|%s", observation.PID, observation.Protocol, observation.Domain)
+}
+
+func (s *service) processNameLocked(pid int32) string {
+	if record := s.pids[pid]; record != nil {
+		return record.Name
+	}
+	return ""
 }
 
 func (s *service) cachedDisplayNameLocked(host string) string {
