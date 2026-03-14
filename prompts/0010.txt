@@ -1,0 +1,4 @@
+i've only tested this app on mac darwin so far. Can you give me a Dockerfile and a way to test on
+  linux? Look for things that are darwin only and add the linux version we'll need. Use best practices
+  in golang for this with // directives.
+

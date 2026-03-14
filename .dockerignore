@@ -1,0 +1,6 @@
+.git
+.gitignore
+prompts/
+dialtone-watcher
+tmp/
+dist/

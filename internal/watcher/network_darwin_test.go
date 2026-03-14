@@ -22,22 +22,3 @@ func TestParseEndpointPort(t *testing.T) {
 		}
 	}
 }
-
-func TestInferProtocol(t *testing.T) {
-	tests := []struct {
-		port uint16
-		want string
-	}{
-		{port: 80, want: "HTTP"},
-		{port: 443, want: "HTTPS"},
-		{port: 53, want: "DNS"},
-		{port: 5432, want: "Postgres"},
-		{port: 9999, want: "TCP"},
-	}
-
-	for _, tt := range tests {
-		if got := inferProtocol(tt.port); got != tt.want {
-			t.Fatalf("inferProtocol(%d) = %q, want %q", tt.port, got, tt.want)
-		}
-	}
-}

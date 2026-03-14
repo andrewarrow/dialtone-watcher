@@ -1,5 +1,56 @@
 # dialtone-watcher
 
+## Linux support
+
+The watcher now has explicit platform collectors behind Go build tags:
+
+- `internal/watcher/network_darwin.go`: macOS network collection via `nettop`
+- `internal/watcher/network_linux.go`: Linux network collection via `gopsutil` socket inspection
+- `internal/watcher/network_stub.go`: fallback no-op collector for unsupported platforms
+
+On Linux, the watcher can enumerate remote socket endpoints and map them back to PIDs. Linux does not expose the original DNS hostnames for each socket through `/proc`, so Linux observations start as remote IPs and are enriched by the existing reverse-lookup pipeline when possible.
+
+## Test on Linux with Docker
+
+Build and run the Linux test target:
+
+```bash
+docker build --target test -t dialtone-watcher:test .
+```
+
+Build the Linux runtime image:
+
+```bash
+docker build --target runtime -t dialtone-watcher:linux .
+```
+
+Smoke test the Linux binary in a container:
+
+```bash
+docker run --rm dialtone-watcher:linux help
+docker run --rm -e DIALTONE_WATCHER_HOME=/tmp/dialtone dialtone-watcher:linux summary
+```
+
+If you want to inspect the Linux container's own processes and sockets, run it with shared namespaces on a Linux host:
+
+```bash
+docker run --rm \
+  --pid=host \
+  --network=host \
+  -e DIALTONE_WATCHER_HOME=/tmp/dialtone \
+  dialtone-watcher:linux start
+```
+
+Notes:
+
+- `docker build --target test ...` gives you a real Linux `go test ./...` run even from macOS.
+- On macOS Docker Desktop, `--pid=host` and `--network=host` do not expose the macOS host process table, so runtime network/process inspection should be treated as Linux-container validation only.
+- A direct Linux build check is also useful during development:
+
+```bash
+GOOS=linux GOARCH=amd64 go build ./...
+```
+
 Original Prompt:
 
 ```
