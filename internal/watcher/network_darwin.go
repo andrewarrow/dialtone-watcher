@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/netip"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -153,6 +154,13 @@ func normalizeRemoteHost(endpoint string) string {
 	host = strings.ToLower(strings.TrimSpace(host))
 	if host == "" || host == "*" || host == "localhost" {
 		return ""
+	}
+
+	if addr, err := netip.ParseAddr(host); err == nil {
+		if !isPublicIP(addr.String()) {
+			return ""
+		}
+		return addr.String()
 	}
 
 	if isPublicIP(host) {

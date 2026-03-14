@@ -1,0 +1,435 @@
+./dialtone-watcher summary
+Watcher running: true
+Watcher pid: 99317
+Polls completed: 5
+Tracked processes: 976
+Tracked domains: 16
+Hardware: aas-MacBook-Pro.local on darwin (Apple M4 Max, 36.0 GB RAM, 14 logical cores)
+Interesting processes:
+  1. pid=83479 name=com.apple.Virtualization.VirtualMachine cpu=5.68% rss=2679.4 MB seen=5 polls
+  2. pid=70214 name=plugin-container cpu=5.26% rss=1975.8 MB seen=5 polls
+  3. pid=61783 name=Firefox GPU Helper cpu=2.71% rss=209.6 MB seen=5 polls
+  4. pid=61421 name=firefox cpu=2.54% rss=816.1 MB seen=5 polls
+  5. pid=84163 name=plugin-container cpu=1.78% rss=511.3 MB seen=5 polls
+  6. pid=7237 name=Slack Helper (Renderer) cpu=1.73% rss=649.5 MB seen=5 polls
+Interesting domains:
+  1. domain=::1 rx=1.5 MiB tx=1.5 MiB seen=20 polls
+  2. domain=172.64.155.209 rx=460.6 KiB tx=206.8 KiB seen=10 polls
+  3. domain=17.57.144.121 rx=70.2 KiB tx=165.8 KiB seen=5 polls
+  4. domain=ec2-44-229-222-36.us-west-2.compute.amazonaws.com ip=44.229.222.36 rx=144.8 KiB tx=80.4 KiB seen=5 polls
+  5. domain=149.154.175.55 rx=155.9 KiB tx=56.4 KiB seen=5 polls
+  6. domain=31.224.186.35.bc.googleusercontent.com ip=35.186.224.31 rx=4.9 KiB tx=22.6 KiB seen=5 polls
+~/os/dialtone-watcher (main)[ab8aa611] $ whois 149.154.175.55
+% IANA WHOIS server
+% for more information on IANA, visit http://www.iana.org
+% This query returned 1 object
+
+refer:        whois.arin.net
+
+inetnum:      149.0.0.0 - 149.255.255.255
+organisation: Administered by ARIN
+status:       LEGACY
+
+whois:        whois.arin.net
+
+changed:      1993-05
+source:       IANA
+
+# whois.arin.net
+
+NetRange:       149.154.64.0 - 149.154.255.255
+CIDR:           149.154.128.0/17, 149.154.64.0/18
+NetName:        RIPE-ERX-149-154-0-0
+NetHandle:      NET-149-154-64-0-1
+Parent:         NET149 (NET-149-0-0-0-0)
+NetType:        Early Registrations, Transferred to RIPE NCC
+OriginAS:       
+Organization:   RIPE Network Coordination Centre (RIPE)
+RegDate:        2010-11-03
+Updated:        2025-02-10
+Comment:        These addresses have been further assigned to users in the RIPE NCC region. Please note that the organization and point of contact details listed below are those of the RIPE NCC not the current address holder. ** You can find user contact information for the current address holder in the RIPE database at http://www.ripe.net/whois.
+Ref:            https://rdap.arin.net/registry/ip/149.154.64.0
+
+ResourceLink:  https://apps.db.ripe.net/db-web-ui/query
+ResourceLink:  whois.ripe.net
+
+
+OrgName:        RIPE Network Coordination Centre
+OrgId:          RIPE
+Address:        P.O. Box 10096
+City:           Amsterdam
+StateProv:      
+PostalCode:     1001EB
+Country:        NL
+RegDate:        
+Updated:        2013-07-29
+Ref:            https://rdap.arin.net/registry/entity/RIPE
+
+ReferralServer:  whois.ripe.net
+ResourceLink:  https://apps.db.ripe.net/db-web-ui/query
+
+OrgAbuseHandle: ABUSE3850-ARIN
+OrgAbuseName:   Abuse Contact
+OrgAbusePhone:  +31205354444 
+OrgAbuseEmail:  abuse@ripe.net
+OrgAbuseRef:    https://rdap.arin.net/registry/entity/ABUSE3850-ARIN
+
+OrgTechHandle: RNO29-ARIN
+OrgTechName:   RIPE NCC Operations
+OrgTechPhone:  +31 20 535 4444 
+OrgTechEmail:  hostmaster@ripe.net
+OrgTechRef:    https://rdap.arin.net/registry/entity/RNO29-ARIN
+
+
+~/os/dialtone-watcher (main)[ab8aa611] $ whois 17.57.144.121 
+% IANA WHOIS server
+% for more information on IANA, visit http://www.iana.org
+% This query returned 1 object
+
+refer:        whois.arin.net
+
+inetnum:      17.0.0.0 - 17.255.255.255
+organisation: Apple Computer Inc.
+status:       LEGACY
+
+whois:        whois.arin.net
+
+changed:      1992-07
+source:       IANA
+
+# whois.arin.net
+
+NetRange:       17.0.0.0 - 17.255.255.255
+CIDR:           17.0.0.0/8
+NetName:        APPLE-WWNET
+NetHandle:      NET-17-0-0-0-1
+Parent:          ()
+NetType:        Direct Allocation
+OriginAS:       
+Organization:   Apple Inc. (APPLEC-1-Z)
+RegDate:        1990-04-16
+Updated:        2025-04-02
+Comment:        Geofeed https://ip-geolocation.apple.com
+Ref:            https://rdap.arin.net/registry/ip/17.0.0.0
+
+
+
+OrgName:        Apple Inc.
+OrgId:          APPLEC-1-Z
+Address:        One Apple Park Way
+City:           Cupertino
+StateProv:      CA
+PostalCode:     95014
+Country:        US
+RegDate:        2009-12-14
+Updated:        2025-04-22
+Ref:            https://rdap.arin.net/registry/entity/APPLEC-1-Z
+
+
+OrgAbuseHandle: APPLE11-ARIN
+OrgAbuseName:   Apple Abuse
+OrgAbusePhone:  +1-408-974-7777 
+OrgAbuseEmail:  abuse@apple.com
+OrgAbuseRef:    https://rdap.arin.net/registry/entity/APPLE11-ARIN
+
+OrgTechHandle: IPHOS7-ARIN
+OrgTechName:   IP Hostmaster
+OrgTechPhone:  +1-408-996-1010 
+OrgTechEmail:  ip-hostmaster@group.apple.com
+OrgTechRef:    https://rdap.arin.net/registry/entity/IPHOS7-ARIN
+
+RTechHandle: APPLE141-ARIN
+RTechName:   Apple Inc
+RTechPhone:  +1-408-996-1010 
+RTechEmail:  ip-hostmaster@group.apple.com
+RTechRef:    https://rdap.arin.net/registry/entity/APPLE141-ARIN   change the resolve.go logic to u
+  se whois or other ways to make sure we get ip addresses converted to who they are. The exact domain
+  like apple.com is wanted for the 17.57.144.121 example. and ripe.net for the 149.154.175.55 example.
+  remove ::1 from interesting list. and keep domains like ec2-44-229-222-36.us-west-2.compute.amazonaw
+  s.com they are good don't make that just "amazonaws.com" we want the full domain if available.
+
+
+Yes — on macOS there are a few different commands depending on **what you’re actually trying to learn** from the IP. These tools answer slightly different questions.
+
+---
+
+## 1. Reverse DNS (best first try)
+
+If a domain is actually mapped to that IP via PTR records, use:
+
+```bash
+dig -x 8.8.8.8 +short
+```
+
+or
+
+```bash
+nslookup 8.8.8.8
+```
+
+Example:
+
+```bash
+$ dig -x 8.8.8.8 +short
+dns.google.
+```
+
+This is called **reverse DNS**.
+
+⚠️ Important:
+Many IPs **do not have PTR records**, so this often returns nothing even if many domains point to the IP.
+
+---
+
+## 2. See all DNS records for a domain
+
+If you already have a domain and want the IP mapping:
+
+```bash
+dig example.com
+```
+
+or
+
+```bash
+host example.com
+```
+
+Example:
+
+```bash
+host example.com
+```
+
+---
+
+## 3. WHOIS (who owns the IP block)
+
+This does **not give domains**, but tells you who owns the IP.
+
+```bash
+whois 8.8.8.8
+```
+
+Example output might show:
+
+```
+OrgName: Google LLC
+NetRange: 8.8.8.0 - 8.8.8.255
+```
+
+Good for identifying **provider / company**.
+
+---
+
+## 4. Try `host` (cleaner output than nslookup)
+
+macOS ships with this:
+
+```bash
+host 8.8.8.8
+```
+
+Output:
+
+```
+8.8.8.8.in-addr.arpa domain name pointer dns.google.
+```
+
+---
+
+## 5. If you want **all domains hosted on an IP**
+
+DNS alone cannot tell you this.
+
+You need external databases like:
+
+* SecurityTrails
+* Shodan
+* Censys
+* HackerTarget
+
+Example CLI trick using **Shodan API** if you ever go that route.
+
+---
+
+## My quick workflow (what I actually do)
+
+```bash
+dig -x IP +short
+```
+
+if empty:
+
+```bash
+whois IP
+```
+
+if I suspect a web host:
+
+```bash
+curl -I http://IP
+```
+
+Sometimes the headers leak the domain.
+
+---
+
+## Bonus trick (often works surprisingly well)
+
+```bash
+curl -v http://IP
+```
+
+Look for:
+
+```
+< Location: https://example.com
+```
+
+or server headers.
+
+---
+
+## If you want, I can also show you a **very useful hacker-style trick** to discover domains hosted on the same IP using just curl + TLS certificates. It works shockingly often and requires no API.
+
+
+also add these ideas and call them in the right order for what you think will give us the best
+  data with least overhead. If we can avoid an http call avoid them but better to make http call than
+  have a ip not converted to a domain
+
+and this
+
+Alright — this trick is **extremely useful** and a lot of engineers/security folks use it when reverse DNS fails.
+
+The idea:
+**TLS certificates often list all domains hosted on that IP.**
+
+So you ask the server for its certificate and read the **SAN (Subject Alternative Names)** list.
+
+---
+
+# Method 1 (best): Use `openssl`
+
+Works on macOS by default.
+
+```bash
+openssl s_client -connect 1.2.3.4:443 -servername 1.2.3.4 </dev/null 2>/dev/null | \
+openssl x509 -noout -text | grep -A1 "Subject Alternative Name"
+```
+
+Example output:
+
+```
+DNS:example.com
+DNS:www.example.com
+DNS:api.example.com
+DNS:cdn.example.com
+```
+
+Boom — you just discovered domains pointing at that IP.
+
+---
+
+# Cleaner version (just the domains)
+
+```bash
+openssl s_client -connect 1.2.3.4:443 -servername 1.2.3.4 </dev/null 2>/dev/null \
+| openssl x509 -noout -text \
+| grep DNS:
+```
+
+---
+
+# Method 2: Even nicer output
+
+```bash
+openssl s_client -connect 1.2.3.4:443 -servername 1.2.3.4 </dev/null 2>/dev/null \
+| openssl x509 -noout -ext subjectAltName
+```
+
+Example:
+
+```
+X509v3 Subject Alternative Name:
+DNS:example.com, DNS:www.example.com, DNS:api.example.com
+```
+
+---
+
+# Why this works
+
+Most servers use **one TLS certificate for many domains** (SNI hosting).
+
+Example servers:
+
+* Cloudflare
+* nginx
+* Apache
+* Caddy
+* Traefik
+
+If the cert includes multiple domains, you get them all instantly.
+
+---
+
+# Method 3 (very quick test)
+
+```bash
+curl -v https://1.2.3.4
+```
+
+Sometimes the server redirects:
+
+```
+Location: https://example.com
+```
+
+---
+
+# Another fun trick (developers like this one)
+
+```bash
+nmap --script ssl-cert -p 443 1.2.3.4
+```
+
+Shows domains in the cert too.
+
+---
+
+# Realistic expectations
+
+This works great for:
+
+* VPS
+* small servers
+* nginx boxes
+* home servers
+* developer machines
+
+But **won’t work well for big CDNs** like:
+
+* Cloudflare
+* AWS ALB
+* Fastly
+
+because they use shared certificates.
+
+---
+
+# If you're building your **Dialtone monitoring idea**
+
+This technique is gold.
+
+You could automatically discover:
+
+* suspicious domains
+* misconfigured servers
+* shadow infrastructure
+
+just by collecting cert SANs.
+
+---
+
+If you want, I can also show you a **very powerful trick using Certificate Transparency logs** that can reveal **every domain a company has ever registered**. It's honestly one of the most eye-opening OSINT techniques developers learn.
+

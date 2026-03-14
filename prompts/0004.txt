@@ -1,0 +1,24 @@
+./dialtone-watcher summary
+  Watcher running: true
+  Watcher pid: 96964
+  Polls completed: 3
+  Tracked processes: 976
+  Tracked domains: 13
+  Hardware: aas-MacBook-Pro.local on darwin (Apple M4 Max, 36.0 GB RAM, 14 logical cores)
+  Interesting processes:
+    1. pid=83479 name=com.apple.Virtualization.VirtualMachine cpu=5.67% rss=2705.3 MB seen=3 polls
+    2. pid=70214 name=plugin-container cpu=5.28% rss=1999.4 MB seen=3 polls
+    3. pid=61783 name=Firefox GPU Helper cpu=2.74% rss=275.8 MB seen=3 polls
+    4. pid=61421 name=firefox cpu=2.55% rss=855.4 MB seen=3 polls
+    5. pid=84163 name=plugin-container cpu=1.91% rss=616.5 MB seen=3 polls
+    6. pid=96964 name=dialtone-watcher cpu=1.90% rss=16.9 MB seen=3 polls
+  Interesting domains:
+    1. domain=17.57.144.121 rx=70.2 KiB tx=165.8 KiB seen=3 polls
+    2. domain=44.229.222.36 rx=139.4 KiB tx=77.4 KiB seen=3 polls
+    3. domain=149.154.175.55 rx=150.4 KiB tx=55.0 KiB seen=3 polls
+    4. domain=17.253.83.71 rx=21.9 KiB tx=3.8 KiB seen=3 polls
+    5. domain=35.186.224.31 rx=4.6 KiB tx=19.6 KiB seen=3 polls
+    6. domain=17.253.83.79 rx=17.3 KiB tx=6.3 KiB seen=3 polls     let's change this app so it does a
+  nslookup or good way to convert the ip addresses to domains but cache this per ip and once it's in
+  memory don't ask for it again. Do this in background thread safe so that when summary is called it's
+  fast to display the domains with their names vs ip

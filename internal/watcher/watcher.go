@@ -253,7 +253,14 @@ func (s *service) topDomains(limit int) []DomainSnapshot {
 
 	records := make([]*domainRecord, 0, len(s.domains))
 	for _, record := range s.domains {
+		if normalizeResolvedHost(record.Domain) == "" {
+			continue
+		}
 		records = append(records, record)
+	}
+
+	if len(records) == 0 {
+		return nil
 	}
 
 	sort.Slice(records, func(i, j int) bool {
