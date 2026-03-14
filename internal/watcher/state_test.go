@@ -1,14 +1,13 @@
 package watcher
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 )
 
-func TestMachineIDPersistsAndUsesHashedValue(t *testing.T) {
+func TestMachineIDPersistsAndUsesStoredUUIDValue(t *testing.T) {
 	tempDir := t.TempDir()
 	t.Setenv("DIALTONE_WATCHER_HOME", tempDir)
 
@@ -36,10 +35,13 @@ func TestMachineIDPersistsAndUsesHashedValue(t *testing.T) {
 		t.Fatal("machine-id.json stored an empty machine_id")
 	}
 
-	sum := sha256.Sum256([]byte(record.MachineID + "|dialtone-watcher"))
-	want := hex.EncodeToString(sum[:])
-	if first != want {
-		t.Fatalf("MachineID() = %q, want %q", first, want)
+	if first != record.MachineID {
+		t.Fatalf("MachineID() = %q, want stored value %q", first, record.MachineID)
+	}
+
+	uuidPattern := regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`)
+	if !uuidPattern.MatchString(first) {
+		t.Fatalf("MachineID() = %q, want UUIDv4 format", first)
 	}
 
 	info, err := os.Stat(path)

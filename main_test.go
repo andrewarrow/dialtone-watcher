@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -20,6 +21,9 @@ func TestRunNoArgsPrintsMachineIDAndHelp(t *testing.T) {
 
 	if !strings.Contains(output, "Machine ID: ") {
 		t.Fatalf("run(nil) output missing machine id:\n%s", output)
+	}
+	if !strings.Contains(output, "Machine ID File: "+filepath.Join(tempDir, "machine-id.json")) {
+		t.Fatalf("run(nil) output missing machine id file path:\n%s", output)
 	}
 	if !strings.Contains(output, "Usage:") {
 		t.Fatalf("run(nil) output missing help text:\n%s", output)

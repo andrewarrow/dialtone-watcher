@@ -22,7 +22,7 @@ func run(args []string) error {
 		if err != nil {
 			return err
 		}
-		printMachineID(machineID)
+		printMachineID(machineID, watcher.MachineIDPath())
 	}
 
 	if len(args) == 0 {
@@ -221,6 +221,7 @@ func printHelp() {
 	fmt.Println("  help     print this menu")
 }
 
-func printMachineID(machineID string) {
-	fmt.Printf("Machine ID: %s\n\n", machineID)
+func printMachineID(machineID, machineIDPath string) {
+	fmt.Printf("Machine ID: %s\n", machineID)
+	fmt.Printf("Machine ID File: %s\n\n", machineIDPath)
 }

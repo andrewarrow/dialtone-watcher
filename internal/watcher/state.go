@@ -1,12 +1,11 @@
 package watcher
 
 import (
-	"crypto/rand"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"os"
 	"path/filepath"
+
+	"github.com/google/uuid"
 )
 
 type Status struct {
@@ -125,6 +124,10 @@ func machineIdentityFilePath() string {
 	return filepath.Join(baseDir(), "machine-id.json")
 }
 
+func MachineIDPath() string {
+	return machineIdentityFilePath()
+}
+
 func ensureBaseDir() error {
 	return os.MkdirAll(baseDir(), 0o755)
 }
@@ -134,9 +137,7 @@ func MachineID() (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	sum := sha256.Sum256([]byte(record.MachineID + "|dialtone-watcher"))
-	return hex.EncodeToString(sum[:]), nil
+	return record.MachineID, nil
 }
 
 func loadOrCreateMachineIdentity() (machineIdentityRecord, error) {
@@ -164,11 +165,7 @@ func loadOrCreateMachineIdentity() (machineIdentityRecord, error) {
 }
 
 func newMachineIdentity() (string, error) {
-	buf := make([]byte, 16)
-	if _, err := rand.Read(buf); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(buf), nil
+	return uuid.NewString(), nil
 }
 
 func writeJSON(path string, value any) error {
