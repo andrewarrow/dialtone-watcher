@@ -44,6 +44,10 @@ type service struct {
 	lookupQueue    chan<- string
 }
 
+type RunOptions struct {
+	TestMode bool
+}
+
 func StartDetached() (int, error) {
 	cmd := exec.Command(os.Args[0], "__run")
 	cmd.Stdout = os.Stdout
@@ -58,7 +62,7 @@ func StartDetached() (int, error) {
 	return cmd.Process.Pid, nil
 }
 
-func RunDaemon() error {
+func RunDaemon(options RunOptions) error {
 	hardware, err := CollectHardwareProfile()
 	if err != nil {
 		return err
@@ -80,6 +84,9 @@ func RunDaemon() error {
 		lookupPending:  make(map[string]bool),
 	}
 	svc.lookupQueue = startReverseLookupWorker(svc)
+
+	stopTestTraffic := startTestTraffic(options.TestMode)
+	defer stopTestTraffic()
 
 	if err := svc.pollOnce(); err != nil {
 		return err

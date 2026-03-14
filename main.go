@@ -17,7 +17,9 @@ func main() {
 }
 
 func run(args []string) error {
-	if len(args) == 0 || args[0] != "__run" {
+	command, commandArgs := splitCommand(args)
+
+	if command != "__run" {
 		machineID, err := watcher.MachineID()
 		if err != nil {
 			return err
@@ -25,12 +27,12 @@ func run(args []string) error {
 		printMachineID(machineID, watcher.MachineIDPath())
 	}
 
-	if len(args) == 0 {
+	if command == "" {
 		printHelp()
 		return nil
 	}
 
-	switch args[0] {
+	switch command {
 	case "start":
 		return startWatcher()
 	case "stop":
@@ -38,14 +40,44 @@ func run(args []string) error {
 	case "summary":
 		return printSummary()
 	case "__run":
-		return watcher.RunDaemon()
+		options, err := parseRunOptions(commandArgs)
+		if err != nil {
+			return err
+		}
+		return watcher.RunDaemon(watcher.RunOptions{TestMode: options.TestMode})
 	case "help", "-h", "--help":
 		printHelp()
 		return nil
 	default:
 		printHelp()
-		return fmt.Errorf("unknown command %q", args[0])
+		return fmt.Errorf("unknown command %q", command)
 	}
+}
+
+type runOptions struct {
+	TestMode bool
+}
+
+func splitCommand(args []string) (string, []string) {
+	if len(args) == 0 {
+		return "", nil
+	}
+	return args[0], args[1:]
+}
+
+func parseRunOptions(args []string) (runOptions, error) {
+	var options runOptions
+
+	for _, arg := range args {
+		switch arg {
+		case "--test":
+			options.TestMode = true
+		default:
+			return runOptions{}, fmt.Errorf("unknown __run option %q", arg)
+		}
+	}
+
+	return options, nil
 }
 
 func startWatcher() error {

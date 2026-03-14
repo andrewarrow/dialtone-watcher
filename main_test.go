@@ -30,6 +30,23 @@ func TestRunNoArgsPrintsMachineIDAndHelp(t *testing.T) {
 	}
 }
 
+func TestParseRunOptions(t *testing.T) {
+	options, err := parseRunOptions([]string{"--test"})
+	if err != nil {
+		t.Fatalf("parseRunOptions() error = %v", err)
+	}
+	if !options.TestMode {
+		t.Fatal("parseRunOptions() TestMode = false, want true")
+	}
+}
+
+func TestParseRunOptionsRejectsUnknownFlag(t *testing.T) {
+	_, err := parseRunOptions([]string{"--bogus"})
+	if err == nil {
+		t.Fatal("parseRunOptions() error = nil, want non-nil")
+	}
+}
+
 func captureStdout(t *testing.T, fn func()) string {
 	t.Helper()
 
