@@ -27,9 +27,13 @@ func startReverseLookupWorker(svc *service) chan<- string {
 
 			svc.mu.Lock()
 			svc.lookupPending[ip] = false
-			svc.lookupCache[ip] = reverseLookupResult{
-				ready: true,
-				name:  name,
+			if name != "" {
+				svc.lookupCache[ip] = reverseLookupResult{
+					ready: true,
+					name:  name,
+				}
+			} else {
+				delete(svc.lookupCache, ip)
 			}
 			if record := svc.domains[ip]; record != nil {
 				record.DisplayName = name

@@ -1,0 +1,83 @@
+look at last commit whois 193.0.19.229
+  % IANA WHOIS server
+  % for more information on IANA, visit http://www.iana.org
+  % This query returned 1 object
+
+  refer:        whois.ripe.net
+
+  inetnum:      193.0.0.0 - 193.255.255.255
+  organisation: RIPE NCC
+  status:       ALLOCATED
+
+  whois:        whois.ripe.net
+
+  changed:      1993-05
+  source:       IANA
+
+  # whois.ripe.net
+
+  inetnum:        193.0.18.0 - 193.0.21.255
+  netname:        RIPE-NCC
+  descr:          RIPE Network Coordination Centre
+  descr:          Amsterdam, Netherlands
+  remarks:        Used for RIPE NCC infrastructure.
+  country:        NL
+  admin-c:        BRD-RIPE
+  tech-c:         OPS4-RIPE
+  status:         ASSIGNED PA
+  mnt-by:         RIPE-NCC-MNT
+  created:        2018-06-07T13:13:16Z
+  last-modified:  2018-06-07T13:13:16Z
+  source:         RIPE
+
+  role:           RIPE NCC Operations
+  address:        Stationsplein 11
+  address:        1012 AB Amsterdam
+  address:        The Netherlands
+  phone:          +31 20 535 4444
+  fax-no:         +31 20 535 4445
+  abuse-mailbox:  abuse@ripe.net
+  admin-c:        BRD-RIPE
+  tech-c:         MENN1-RIPE
+  tech-c:         RCO-RIPE
+  tech-c:         CNAG-RIPE
+  tech-c:         SO2011-RIPE
+  tech-c:         TOL666-RIPE
+  tech-c:         ADM6699-RIPE
+  tech-c:         TIB-RIPE
+  tech-c:         SG16480-RIPE
+  tech-c:         RDM397-RIPE
+  nic-hdl:        OPS4-RIPE
+  mnt-by:         RIPE-NCC-MNT
+  created:        2002-09-16T10:35:19Z
+  last-modified:  2025-04-24T09:29:14Z
+  source:         RIPE # Filtered
+
+  person:         Brian Riddle
+  address:        IT Manager
+  address:        RIPE NCC - Operations
+  address:        Stationsplein 11
+  address:        1012 AB Amsterdam
+  address:        The Netherlands
+  phone:          +31 20 535 4444
+  fax-no:         +31 20 535 4445
+  nic-hdl:        BRD-RIPE
+  mnt-by:         RIPE-NCC-MNT
+  created:        2006-02-08T11:28:31Z
+  last-modified:  2017-08-15T12:31:30Z
+  source:         RIPE # Filtered
+
+  % Information related to '193.0.18.0/23AS3333'
+
+  route:          193.0.18.0/23
+  descr:          RIPE-NCC
+  origin:         AS3333
+  mnt-by:         RIPE-NCC-MNT
+  created:        2006-10-16T14:18:29Z
+  last-modified:  2006-10-16T14:18:29Z
+  source:         RIPE
+
+  % This query was served by the RIPE Database Query Service version 1.121 (SHETLAND)  this ip should
+  bet ripe.net but it wasn't. does that mean a background process was still runnign and would get it
+  eventually? or did the lookup methods for this one fail? If the ip will eventually resolve it should
+  not appear in summary list until it does

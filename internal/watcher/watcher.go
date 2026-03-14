@@ -253,7 +253,7 @@ func (s *service) topDomains(limit int) []DomainSnapshot {
 
 	records := make([]*domainRecord, 0, len(s.domains))
 	for _, record := range s.domains {
-		if normalizeResolvedHost(record.Domain) == "" {
+		if !shouldIncludeDomainRecord(record) {
 			continue
 		}
 		records = append(records, record)
@@ -287,6 +287,18 @@ func (s *service) topDomains(limit int) []DomainSnapshot {
 		top = append(top, record.DomainSnapshot)
 	}
 	return top
+}
+
+func shouldIncludeDomainRecord(record *domainRecord) bool {
+	if record == nil {
+		return false
+	}
+
+	if normalizeResolvedHost(record.DisplayName) != "" && !isPublicIP(record.DisplayName) {
+		return true
+	}
+
+	return !isPublicIP(record.Domain) && normalizeResolvedHost(record.Domain) != ""
 }
 
 func (s *service) cachedDisplayNameLocked(host string) string {
