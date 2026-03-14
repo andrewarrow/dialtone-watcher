@@ -137,7 +137,7 @@ func (s *service) persist(running bool) error {
 		TopProcess:          s.topProcess(),
 		TopProcesses:        s.topProcesses(6),
 		TrackedDomainCount:  len(s.domains),
-		TopDomains:          s.topDomains(6),
+		TopDomains:          s.topDomains(60),
 	}
 
 	return writeSummary(summary)
