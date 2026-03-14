@@ -134,10 +134,14 @@ func printSummary() error {
 	if len(summary.TopDomains) > 0 {
 		fmt.Println("Interesting domains:")
 		for i, domain := range summary.TopDomains {
+			label := domain.Domain
+			if domain.DisplayName != "" {
+				label = fmt.Sprintf("%s ip=%s", domain.DisplayName, domain.Domain)
+			}
 			fmt.Printf(
 				"  %d. domain=%s rx=%s tx=%s seen=%d polls\n",
 				i+1,
-				domain.Domain,
+				label,
 				formatBytes(domain.RXBytes),
 				formatBytes(domain.TXBytes),
 				domain.PollsSeen,

@@ -32,6 +32,9 @@ type service struct {
 	pids           map[int32]*processRecord
 	domains        map[string]*domainRecord
 	networkSamples map[string]networkConnectionSample
+	lookupCache    map[string]reverseLookupResult
+	lookupPending  map[string]bool
+	lookupQueue    chan<- string
 }
 
 func StartDetached() (int, error) {
@@ -63,7 +66,10 @@ func RunDaemon() error {
 		pids:           make(map[int32]*processRecord),
 		domains:        make(map[string]*domainRecord),
 		networkSamples: make(map[string]networkConnectionSample),
+		lookupCache:    make(map[string]reverseLookupResult),
+		lookupPending:  make(map[string]bool),
 	}
+	svc.lookupQueue = startReverseLookupWorker(svc)
 
 	if err := svc.pollOnce(); err != nil {
 		return err
@@ -117,8 +123,13 @@ func (s *service) pollOnce() error {
 }
 
 func (s *service) persist(running bool) error {
+	summaryPID := 0
+	if running {
+		summaryPID = os.Getpid()
+	}
+
 	summary := Summary{
-		PID:                 os.Getpid(),
+		PID:                 summaryPID,
 		Running:             running,
 		PollCount:           s.polls,
 		TrackedProcessCount: len(s.pids),
@@ -176,6 +187,7 @@ func (s *service) pollDomainsLocked(observations map[string]networkObservation, 
 			record.Domain = observation.Domain
 			s.domains[observation.Domain] = record
 		}
+		record.DisplayName = s.cachedDisplayNameLocked(observation.Domain)
 		record.RXBytes += sample.RXBytes
 		record.TXBytes += sample.TXBytes
 		record.LastSeen = now
@@ -268,6 +280,29 @@ func (s *service) topDomains(limit int) []DomainSnapshot {
 		top = append(top, record.DomainSnapshot)
 	}
 	return top
+}
+
+func (s *service) cachedDisplayNameLocked(host string) string {
+	if !isPublicIP(host) {
+		return ""
+	}
+
+	if result, ok := s.lookupCache[host]; ok && result.ready {
+		return result.name
+	}
+
+	if s.lookupPending[host] {
+		return ""
+	}
+
+	s.lookupPending[host] = true
+	select {
+	case s.lookupQueue <- host:
+	default:
+		s.lookupPending[host] = false
+	}
+
+	return ""
 }
 
 func diffOrCurrent(current, previous uint64) uint64 {

@@ -20,10 +20,11 @@ type ProcessSnapshot struct {
 }
 
 type DomainSnapshot struct {
-	Domain    string `json:"domain"`
-	RXBytes   uint64 `json:"rx_bytes"`
-	TXBytes   uint64 `json:"tx_bytes"`
-	PollsSeen uint64 `json:"polls_seen"`
+	Domain      string `json:"domain"`
+	DisplayName string `json:"display_name,omitempty"`
+	RXBytes     uint64 `json:"rx_bytes"`
+	TXBytes     uint64 `json:"tx_bytes"`
+	PollsSeen   uint64 `json:"polls_seen"`
 }
 
 type Summary struct {
@@ -47,7 +48,21 @@ func LoadStatus() (Status, error) {
 func LoadSummary() (Summary, error) {
 	var summary Summary
 	err := readJSON(summaryFilePath(), &summary)
-	return summary, err
+	if err != nil {
+		return summary, err
+	}
+
+	if !summary.Running {
+		summary.PID = 0
+		return summary, nil
+	}
+
+	if summary.PID == 0 || !IsProcessRunning(summary.PID) {
+		summary.Running = false
+		summary.PID = 0
+	}
+
+	return summary, nil
 }
 
 func writeStatus(status Status) error {
