@@ -1,0 +1,582 @@
+For your agent you actually want **two different IDs**, not one.
+
+**1️⃣ Machine ID** – stable per computer
+**2️⃣ Install/User ID** – stable per install of the agent
+
+If you mix these, you’ll regret it later (people reinstall OS, run multiple agents, etc.).
+
+The safest design is:
+
+```
+machine_id   → identifies the physical machine
+install_id   → identifies this specific agent install
+```
+
+Your backend can then model:
+
+```
+user
+  └── installs
+        └── machines
+              └── telemetry events
+```
+
+---
+
+# What data Go can reliably access
+
+You can safely get these cross-platform:
+
+```
+hostname
+cpu model
+cpu cores
+total RAM
+disk size
+MAC addresses
+OS
+platform version
+```
+
+These together create a **hardware fingerprint**.
+
+Use **gopsutil** to collect most of it.
+
+---
+
+# Strategy I recommend
+
+### Machine ID
+
+Generate a **stable fingerprint hash** from hardware.
+
+Example inputs:
+
+```
+hostname
+cpu model
+total RAM
+MAC addresses
+OS
+```
+
+Then hash it.
+
+```
+machine_id = sha256(fingerprint)
+```
+
+This survives app reinstalls.
+
+---
+
+### Install ID
+
+Generate once and store locally.
+
+Example:
+
+```
+install_id = uuidv4
+```
+
+Store it in:
+
+```
+~/.dialtone/install_id
+```
+
+or
+
+```
+~/Library/Application Support/dialtone/
+```
+
+---
+
+# Go code – create machine ID
+
+```go
+package main
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"net"
+	"strings"
+
+	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/host"
+	"github.com/shirou/gopsutil/v3/mem"
+)
+
+func getMachineID() (string, error) {
+
+	hostInfo, _ := host.Info()
+	cpuInfo, _ := cpu.Info()
+	memInfo, _ := mem.VirtualMemory()
+
+	var macs []string
+	ifaces, _ := net.Interfaces()
+
+	for _, iface := range ifaces {
+		if iface.HardwareAddr.String() != "" {
+			macs = append(macs, iface.HardwareAddr.String())
+		}
+	}
+
+	cpuModel := ""
+	if len(cpuInfo) > 0 {
+		cpuModel = cpuInfo[0].ModelName
+	}
+
+	fingerprint := fmt.Sprintf(
+		"%s|%s|%d|%s|%s",
+		hostInfo.Hostname,
+		cpuModel,
+		memInfo.Total,
+		strings.Join(macs, ","),
+		hostInfo.Platform,
+	)
+
+	hash := sha256.Sum256([]byte(fingerprint))
+
+	return hex.EncodeToString(hash[:]), nil
+}
+
+func main() {
+
+	id, err := getMachineID()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Machine ID:", id)
+}
+```
+
+Example output:
+
+```
+Machine ID:
+3c14f0c2e7a3c0c1d99f...
+```
+
+---
+
+# Install ID generator
+
+Use UUID.
+
+Example:
+
+```go
+import "github.com/google/uuid"
+
+func getInstallID() string {
+	return uuid.New().String()
+}
+```
+
+You store it locally the first time the agent runs.
+
+---
+
+# What your API payload should look like
+
+When the agent posts data to `dialtoneapp.com`:
+
+```
+POST /agent/report
+```
+
+Payload example:
+
+```json
+{
+  "machine_id": "3c14f0c2e7a3c0c1d99f...",
+  "install_id": "5c1a4d24-b6d4-4c3c-b0c2-7b63...",
+  "hostname": "andrews-macbook",
+  "cpu_model": "Apple M4 Max",
+  "cpu_cores": 16,
+  "ram_gb": 48,
+  "os": "macOS",
+  "platform_version": "14.4"
+}
+```
+
+Then telemetry events attach to:
+
+```
+machine_id
+install_id
+```
+
+---
+
+# DB schema I’d recommend
+
+Very simple.
+
+### machines
+
+```
+machine_id
+cpu_model
+ram_gb
+os
+platform
+first_seen
+last_seen
+```
+
+---
+
+### installs
+
+```
+install_id
+machine_id
+agent_version
+created_at
+```
+
+---
+
+### telemetry
+
+```
+id
+install_id
+timestamp
+process
+domain
+bytes_rx
+bytes_tx
+```
+
+---
+
+# One important trick
+
+Add **agent version** and **OS architecture**.
+
+Example:
+
+```
+agent_version = 0.1.3
+arch = arm64
+```
+
+This helps debug problems.
+
+---
+
+# One more clever trick
+
+You can also compute a **hardware class hash**.
+
+Example:
+
+```
+hardware_class = sha256(cpu_model + ram + cores)
+```
+
+This lets you compare machines like:
+
+```
+"All M3 Max 48GB machines"
+```
+
+without storing personally identifiable info.
+
+---
+
+# Final advice
+
+For a telemetry system like yours:
+
+**Never rely on a single identifier.**
+
+Use:
+
+```
+machine_id
+install_id
+session_id
+```
+
+Each solves a different problem.
+
+---
+
+If you want a **machine ID that survives OS reinstalls and hardware changes**, the trick is **don’t invent your own fingerprint first**. Most operating systems already expose a **stable system identifier**. You should use that when available and fall back to a hash only if needed.
+
+This is exactly what serious telemetry agents (Datadog, CrowdStrike, etc.) do.
+
+Below is the practical approach for your Go agent.
+
+---
+
+# 1️⃣ Best possible machine IDs by OS
+
+### macOS
+
+macOS exposes a **hardware UUID** stored in firmware.
+
+Command:
+
+```bash
+ioreg -rd1 -c IOPlatformExpertDevice
+```
+
+Field:
+
+```id="macuuid"
+IOPlatformUUID
+```
+
+This is **stable across OS reinstalls**.
+
+Example:
+
+```id="macuuidex"
+E2F8F1E3-6A13-5D2B-A8F7-BC92B3F9A10D
+```
+
+---
+
+### Linux
+
+Linux provides:
+
+```id="linuxuuid"
+/etc/machine-id
+```
+
+or
+
+```id="linuxuuid2"
+/var/lib/dbus/machine-id
+```
+
+Example:
+
+```id="linuxuuidex"
+8de277067b3544d4b65c267d0edab928
+```
+
+---
+
+### Windows
+
+Windows provides:
+
+```id="winuuid"
+MachineGuid
+```
+
+Registry path:
+
+```id="winuuidpath"
+HKLM\SOFTWARE\Microsoft\Cryptography
+```
+
+---
+
+# 2️⃣ Go code to get a stable machine ID
+
+This code:
+
+* tries OS-native ID first
+* falls back to hardware fingerprint if unavailable
+
+```go
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"net"
+	"os"
+	"os/exec"
+	"runtime"
+	"strings"
+)
+
+func macPlatformUUID() string {
+
+	cmd := exec.Command("ioreg", "-rd1", "-c", "IOPlatformExpertDevice")
+	out, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(out))
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(line, "IOPlatformUUID") {
+
+			parts := strings.Split(line, "\"")
+			if len(parts) >= 4 {
+				return parts[3]
+			}
+		}
+	}
+
+	return ""
+}
+
+func linuxMachineID() string {
+
+	data, err := os.ReadFile("/etc/machine-id")
+	if err != nil {
+		return ""
+	}
+
+	return strings.TrimSpace(string(data))
+}
+
+func fallbackFingerprint() string {
+
+	var macs []string
+	ifaces, _ := net.Interfaces()
+
+	for _, i := range ifaces {
+		if i.HardwareAddr.String() != "" {
+			macs = append(macs, i.HardwareAddr.String())
+		}
+	}
+
+	fp := strings.Join(macs, "|")
+
+	hash := sha256.Sum256([]byte(fp))
+
+	return hex.EncodeToString(hash[:])
+}
+
+func getMachineID() string {
+
+	switch runtime.GOOS {
+
+	case "darwin":
+		id := macPlatformUUID()
+		if id != "" {
+			return id
+		}
+
+	case "linux":
+		id := linuxMachineID()
+		if id != "" {
+			return id
+		}
+	}
+
+	return fallbackFingerprint()
+}
+
+func main() {
+
+	fmt.Println("Machine ID:", getMachineID())
+}
+```
+
+Example output:
+
+```id="machidex"
+Machine ID: E2F8F1E3-6A13-5D2B-A8F7-BC92B3F9A10D
+```
+
+---
+
+# 3️⃣ Install ID (still needed)
+
+Even with machine ID you should still generate a local install ID.
+
+Example:
+
+```go
+uuid.New().String()
+```
+
+Store locally:
+
+```id="instpath"
+~/.dialtone/install_id
+```
+
+---
+
+# 4️⃣ What your agent should send to your API
+
+Example payload:
+
+```json
+{
+ "machine_id": "E2F8F1E3-6A13-5D2B-A8F7-BC92B3F9A10D",
+ "install_id": "90f2e6b1-6f0a-4b6b-a7e7-6d3a9f0e8c2d",
+ "agent_version": "0.1.0",
+ "os": "macOS",
+ "arch": "arm64",
+ "hostname": "andrews-macbook"
+}
+```
+
+---
+
+# 5️⃣ Extra identifiers you can collect
+
+Useful but optional:
+
+```id="extraids"
+boot_id
+cpu model
+ram size
+disk size
+```
+
+Linux also provides:
+
+```id="bootid"
+/proc/sys/kernel/random/boot_id
+```
+
+This changes each reboot and can be used as a **session ID**.
+
+---
+
+# 6️⃣ Ideal identifier structure
+
+Your system should track:
+
+```id="ids"
+machine_id   → hardware identity
+install_id   → agent install
+boot_id      → session
+```
+
+That gives you **excellent telemetry correlation**.
+
+---
+
+# One important privacy tip
+
+If you want users to trust the agent, hash the machine ID before sending it.
+
+Example:
+
+```id="hashid"
+machine_hash = sha256(machine_id + salt)
+```
+
+Your backend never sees the raw hardware ID.
+
+---
+read prompts/0008.txt and add the logic at the end for the right way to do this. Add the machine id
+  we'll be using for the api when we add it (not yet) to the display when the cli is run, even if run
+  with no commands. We should create this id once (it should be fast) and then display it everytime

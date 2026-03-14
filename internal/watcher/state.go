@@ -1,6 +1,9 @@
 package watcher
 
 import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -52,6 +55,10 @@ type Summary struct {
 	TopConnections         []ConnectionSnapshot `json:"top_connections"`
 }
 
+type machineIdentityRecord struct {
+	MachineID string `json:"machine_id"`
+}
+
 func LoadStatus() (Status, error) {
 	var status Status
 	err := readJSON(statusFilePath(), &status)
@@ -95,6 +102,10 @@ func removeStatus() error {
 }
 
 func baseDir() string {
+	if override := os.Getenv("DIALTONE_WATCHER_HOME"); override != "" {
+		return override
+	}
+
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
 		return filepath.Join(os.TempDir(), "dialtone-watcher")
@@ -110,11 +121,61 @@ func summaryFilePath() string {
 	return filepath.Join(baseDir(), "summary.json")
 }
 
+func machineIdentityFilePath() string {
+	return filepath.Join(baseDir(), "machine-id.json")
+}
+
 func ensureBaseDir() error {
 	return os.MkdirAll(baseDir(), 0o755)
 }
 
+func MachineID() (string, error) {
+	record, err := loadOrCreateMachineIdentity()
+	if err != nil {
+		return "", err
+	}
+
+	sum := sha256.Sum256([]byte(record.MachineID + "|dialtone-watcher"))
+	return hex.EncodeToString(sum[:]), nil
+}
+
+func loadOrCreateMachineIdentity() (machineIdentityRecord, error) {
+	var record machineIdentityRecord
+	path := machineIdentityFilePath()
+
+	if err := readJSON(path, &record); err == nil {
+		if record.MachineID != "" {
+			return record, nil
+		}
+	} else if !os.IsNotExist(err) {
+		return record, err
+	}
+
+	machineID, err := newMachineIdentity()
+	if err != nil {
+		return machineIdentityRecord{}, err
+	}
+	record.MachineID = machineID
+	if err := writeJSONFile(path, record, 0o600); err != nil {
+		return machineIdentityRecord{}, err
+	}
+
+	return record, nil
+}
+
+func newMachineIdentity() (string, error) {
+	buf := make([]byte, 16)
+	if _, err := rand.Read(buf); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(buf), nil
+}
+
 func writeJSON(path string, value any) error {
+	return writeJSONFile(path, value, 0o644)
+}
+
+func writeJSONFile(path string, value any, permissions os.FileMode) error {
 	if err := ensureBaseDir(); err != nil {
 		return err
 	}
@@ -124,7 +185,7 @@ func writeJSON(path string, value any) error {
 		return err
 	}
 
-	return os.WriteFile(path, data, 0o644)
+	return os.WriteFile(path, data, permissions)
 }
 
 func readJSON(path string, value any) error {

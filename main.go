@@ -17,6 +17,14 @@ func main() {
 }
 
 func run(args []string) error {
+	if len(args) == 0 || args[0] != "__run" {
+		machineID, err := watcher.MachineID()
+		if err != nil {
+			return err
+		}
+		printMachineID(machineID)
+	}
+
 	if len(args) == 0 {
 		printHelp()
 		return nil
@@ -211,4 +219,8 @@ func printHelp() {
 	fmt.Println("  stop     stop the background process watcher")
 	fmt.Println("  summary  print watcher poll counts and a compact runtime summary")
 	fmt.Println("  help     print this menu")
+}
+
+func printMachineID(machineID string) {
+	fmt.Printf("Machine ID: %s\n\n", machineID)
 }
