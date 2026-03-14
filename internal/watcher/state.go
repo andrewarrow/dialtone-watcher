@@ -9,7 +9,8 @@ import (
 )
 
 type Status struct {
-	PID int `json:"pid"`
+	PID          int    `json:"pid"`
+	PIDNamespace string `json:"pid_namespace,omitempty"`
 }
 
 type ProcessSnapshot struct {
@@ -42,6 +43,7 @@ type ConnectionSnapshot struct {
 
 type Summary struct {
 	PID                    int                  `json:"pid"`
+	PIDNamespace           string               `json:"pid_namespace,omitempty"`
 	Running                bool                 `json:"running"`
 	PollCount              uint64               `json:"poll_count"`
 	TrackedProcessCount    int                  `json:"tracked_process_count"`
@@ -76,7 +78,13 @@ func LoadSummary() (Summary, error) {
 		return summary, nil
 	}
 
-	if summary.PID == 0 || !IsProcessRunning(summary.PID) {
+	if summary.PID == 0 {
+		summary.Running = false
+		summary.PID = 0
+		return summary, nil
+	}
+
+	if shouldVerifyProcessLiveness(summary.PIDNamespace, currentPIDNamespace()) && !IsProcessRunning(summary.PID) {
 		summary.Running = false
 		summary.PID = 0
 	}
@@ -191,4 +199,22 @@ func readJSON(path string, value any) error {
 		return err
 	}
 	return json.Unmarshal(data, value)
+}
+
+func currentPIDNamespace() string {
+	namespace, err := os.Readlink("/proc/self/ns/pid")
+	if err != nil {
+		return ""
+	}
+	return namespace
+}
+
+func shouldVerifyProcessLiveness(targetPIDNamespace, currentPIDNamespace string) bool {
+	if targetPIDNamespace == "" {
+		return true
+	}
+	if currentPIDNamespace == "" {
+		return false
+	}
+	return targetPIDNamespace == currentPIDNamespace
 }

@@ -64,7 +64,9 @@ func RunDaemon() error {
 		return err
 	}
 
-	if err := writeStatus(Status{PID: os.Getpid()}); err != nil {
+	pidNamespace := currentPIDNamespace()
+
+	if err := writeStatus(Status{PID: os.Getpid(), PIDNamespace: pidNamespace}); err != nil {
 		return err
 	}
 
@@ -138,6 +140,7 @@ func (s *service) persist(running bool) error {
 
 	summary := Summary{
 		PID:                    summaryPID,
+		PIDNamespace:           s.pidNamespace(running),
 		Running:                running,
 		PollCount:              s.polls,
 		TrackedProcessCount:    len(s.pids),
@@ -151,6 +154,13 @@ func (s *service) persist(running bool) error {
 	}
 
 	return writeSummary(summary)
+}
+
+func (s *service) pidNamespace(running bool) string {
+	if !running {
+		return ""
+	}
+	return currentPIDNamespace()
 }
 
 func (s *service) pollProcessesLocked(processes []*process.Process, now time.Time) {
@@ -466,7 +476,13 @@ func CleanStaleStatus() error {
 	if err != nil {
 		return err
 	}
-	if status.PID == 0 || IsProcessRunning(status.PID) {
+	if status.PID == 0 {
+		return nil
+	}
+	if shouldVerifyProcessLiveness(status.PIDNamespace, currentPIDNamespace()) && IsProcessRunning(status.PID) {
+		return nil
+	}
+	if !shouldVerifyProcessLiveness(status.PIDNamespace, currentPIDNamespace()) {
 		return nil
 	}
 	return removeStatus()
