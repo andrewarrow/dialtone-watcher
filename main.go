@@ -1,79 +1,141 @@
 package main
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
+	"syscall"
 
-	"github.com/shirou/gopsutil/v3/cpu"
-	"github.com/shirou/gopsutil/v3/disk"
-	"github.com/shirou/gopsutil/v3/host"
-	"github.com/shirou/gopsutil/v3/mem"
+	"dialtone-watcher/internal/watcher"
 )
 
-type HardwareProfile struct {
-	Hostname        string `json:"hostname"`
-	OS              string `json:"os"`
-	Platform        string `json:"platform"`
-	PlatformVersion string `json:"platform_version"`
-	KernelVersion   string `json:"kernel_version"`
-	UptimeSeconds   uint64 `json:"uptime_seconds"`
-
-	CPUModel         string  `json:"cpu_model"`
-	CPUPhysicalCores int     `json:"cpu_physical_cores"`
-	CPULogicalCores  int     `json:"cpu_logical_cores"`
-	CPUFrequencyMHz  float64 `json:"cpu_frequency_mhz"`
-
-	TotalMemoryGB float64 `json:"total_memory_gb"`
-
-	TotalDiskGB float64 `json:"total_disk_gb"`
+func main() {
+	if err := run(os.Args[1:]); err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
+		os.Exit(1)
+	}
 }
 
-func main() {
-
-	var profile HardwareProfile
-
-	// host info
-	hostInfo, _ := host.Info()
-
-	profile.Hostname = hostInfo.Hostname
-	profile.OS = hostInfo.OS
-	profile.Platform = hostInfo.Platform
-	profile.PlatformVersion = hostInfo.PlatformVersion
-	profile.KernelVersion = hostInfo.KernelVersion
-	profile.UptimeSeconds = hostInfo.Uptime
-
-	// cpu info
-	cpuInfo, _ := cpu.Info()
-	if len(cpuInfo) > 0 {
-		profile.CPUModel = cpuInfo[0].ModelName
-		profile.CPUFrequencyMHz = cpuInfo[0].Mhz
+func run(args []string) error {
+	if len(args) == 0 {
+		printHelp()
+		return nil
 	}
 
-	physical, _ := cpu.Counts(false)
-	logical, _ := cpu.Counts(true)
+	switch args[0] {
+	case "start":
+		return startWatcher()
+	case "stop":
+		return stopWatcher()
+	case "summary":
+		return printSummary()
+	case "__run":
+		return watcher.RunDaemon()
+	case "help", "-h", "--help":
+		printHelp()
+		return nil
+	default:
+		printHelp()
+		return fmt.Errorf("unknown command %q", args[0])
+	}
+}
 
-	profile.CPUPhysicalCores = physical
-	profile.CPULogicalCores = logical
-
-	// memory
-	memInfo, _ := mem.VirtualMemory()
-	profile.TotalMemoryGB = float64(memInfo.Total) / (1024 * 1024 * 1024)
-
-	// disk
-	partitions, _ := disk.Partitions(false)
-
-	var totalDisk uint64
-
-	for _, p := range partitions {
-		usage, err := disk.Usage(p.Mountpoint)
-		if err == nil {
-			totalDisk += usage.Total
+func startWatcher() error {
+	status, err := watcher.LoadStatus()
+	if err == nil && status.PID > 0 {
+		if process, findErr := os.FindProcess(status.PID); findErr == nil {
+			if signalErr := process.Signal(syscall.Signal(0)); signalErr == nil {
+				fmt.Printf("dialtone-watcher is already running with pid %d\n", status.PID)
+				return nil
+			}
 		}
 	}
 
-	profile.TotalDiskGB = float64(totalDisk) / (1024 * 1024 * 1024)
+	pid, err := watcher.StartDetached()
+	if err != nil {
+		return err
+	}
 
-	// print json
-	jsonData, _ := json.MarshalIndent(profile, "", "  ")
-	fmt.Println(string(jsonData))
+	fmt.Printf("dialtone-watcher started with pid %d\n", pid)
+	return nil
+}
+
+func stopWatcher() error {
+	status, err := watcher.LoadStatus()
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			fmt.Println("dialtone-watcher is not running")
+			return nil
+		}
+		return err
+	}
+
+	process, err := os.FindProcess(status.PID)
+	if err != nil {
+		return err
+	}
+
+	if err := process.Signal(syscall.SIGTERM); err != nil {
+		return err
+	}
+
+	fmt.Printf("sent stop signal to pid %d\n", status.PID)
+	return nil
+}
+
+func printSummary() error {
+	summary, err := watcher.LoadSummary()
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			fmt.Println("No watcher state found. Start it with: ./dialtone-watcher start")
+			return nil
+		}
+		return err
+	}
+
+	fmt.Printf("Watcher running: %t\n", summary.Running)
+	if summary.PID > 0 {
+		fmt.Printf("Watcher pid: %d\n", summary.PID)
+	}
+	fmt.Printf("Polls completed: %d\n", summary.PollCount)
+	fmt.Printf("Tracked processes: %d\n", summary.TrackedProcessCount)
+	fmt.Printf(
+		"Hardware: %s on %s (%s, %.1f GB RAM, %d logical cores)\n",
+		summary.Hardware.Hostname,
+		summary.Hardware.Platform,
+		summary.Hardware.CPUModel,
+		summary.Hardware.TotalMemoryGB,
+		summary.Hardware.CPULogicalCores,
+	)
+
+	if summary.TopProcess.PID > 0 {
+		fmt.Printf(
+			"Interesting process: pid=%d name=%s cpu=%.2f%% rss=%.1f MB seen=%d polls\n",
+			summary.TopProcess.PID,
+			summary.TopProcess.Name,
+			summary.TopProcess.CPUPercent,
+			summary.TopProcess.MemoryRSSMB,
+			summary.TopProcess.PollsSeen,
+		)
+	} else {
+		fmt.Println("Interesting process: none recorded yet")
+	}
+
+	return nil
+}
+
+func printHelp() {
+	fmt.Println("dialtone-watcher")
+	fmt.Println()
+	fmt.Println("Usage:")
+	fmt.Println("  ./dialtone-watcher start")
+	fmt.Println("  ./dialtone-watcher stop")
+	fmt.Println("  ./dialtone-watcher summary")
+	fmt.Println("  ./dialtone-watcher help")
+	fmt.Println()
+	fmt.Println("Commands:")
+	fmt.Println("  start    start the background process watcher")
+	fmt.Println("  stop     stop the background process watcher")
+	fmt.Println("  summary  print watcher poll counts and a compact runtime summary")
+	fmt.Println("  help     print this menu")
 }
