@@ -1,0 +1,861 @@
+What you already have is a **great start** — domain → IP → traffic counts. But you can extract **much richer signals** from network activity if you go a little deeper. The trick is combining **socket inspection + packet metadata + DNS correlation**.
+
+I’ll walk through the useful layers.
+
+---
+
+# 1. Map connections to **PID / process name**
+
+This is the **most valuable upgrade** for your app.
+
+Instead of just:
+
+```
+domain=github.com
+rx=5.8 KiB
+```
+
+you could show:
+
+```
+process=VSCode
+pid=14832
+domain=github.com
+rx=5.8 KiB
+tx=18.2 KiB
+```
+
+### How to get it
+
+Use OS socket tables.
+
+On macOS/Linux you can read the equivalent of:
+
+```
+lsof -i
+netstat -p
+ss -p
+```
+
+In Go the easiest method is:
+
+**gopsutil**
+
+Example:
+
+```go
+conns, _ := net.Connections("all")
+
+for _, c := range conns {
+    fmt.Println(
+        "pid:", c.Pid,
+        "local:", c.Laddr.IP,
+        "remote:", c.Raddr.IP,
+        "port:", c.Raddr.Port,
+    )
+}
+```
+
+Then map:
+
+```
+PID → process name
+```
+
+using:
+
+```
+process.NewProcess(pid)
+```
+
+Now you can produce something like:
+
+```
+Chrome → youtube.com
+Slack → slack.com
+Docker → registry-1.docker.io
+```
+
+That’s **10x more useful than raw domains**.
+
+---
+
+# 2. Detect **HTTP vs HTTPS vs other protocols**
+
+Even without decrypting traffic, you can determine protocol by **port and handshake metadata**.
+
+Common ports:
+
+```
+80   HTTP
+443  HTTPS
+53   DNS
+22   SSH
+3306 MySQL
+5432 Postgres
+6379 Redis
+```
+
+Example output:
+
+```
+process=Chrome
+protocol=HTTPS
+domain=youtube.com
+port=443
+```
+
+You can also detect:
+
+```
+QUIC (HTTP/3)
+TLS
+DNS
+SSH
+```
+
+from packet inspection.
+
+Libraries:
+
+**gopacket**
+
+---
+
+# 3. Capture **TLS handshake metadata**
+
+Even though HTTPS is encrypted, the **TLS handshake leaks useful info**.
+
+You can extract:
+
+```
+SNI hostname
+TLS version
+cipher suite
+ALPN protocol
+certificate issuer
+```
+
+Example:
+
+```
+domain=github.com
+tls_version=1.3
+cipher=TLS_AES_128_GCM_SHA256
+alpn=h2
+issuer=DigiCert
+```
+
+This works without decrypting anything.
+
+---
+
+# 4. Track **connection duration**
+
+Instead of just bytes, measure:
+
+```
+start_time
+end_time
+duration
+```
+
+Example:
+
+```
+process=Chrome
+domain=youtube.com
+duration=4m12s
+rx=28MB
+tx=1.2MB
+```
+
+This tells you:
+
+* background polling
+* streaming
+* telemetry
+
+---
+
+# 5. Detect **background telemetry**
+
+You can detect apps that phone home frequently.
+
+Example:
+
+```
+Slack → 120 connections/day
+Notion → 90 connections/day
+Chrome → 700 connections/day
+```
+
+Then compare across users.
+
+Example insight:
+
+```
+Your Slack makes 4× more connections than average.
+```
+
+---
+
+# 6. Track **unique domains per process**
+
+Example:
+
+```
+Chrome → 127 domains
+Slack → 12 domains
+VSCode → 7 domains
+```
+
+Then flag unusual patterns.
+
+Example:
+
+```
+⚠️ Unknown process contacting 18 domains
+```
+
+---
+
+# 7. Detect **data exfiltration patterns**
+
+Look for:
+
+```
+large outbound uploads
+rare domains
+long-lived TLS connections
+```
+
+Example:
+
+```
+process=node
+domain=randomdomain.ru
+tx=400MB
+```
+
+This is the basis of **EDR malware detection**.
+
+---
+
+# 8. Track **DNS queries**
+
+Instead of just passive DNS results, log:
+
+```
+timestamp
+process
+domain
+resolved IP
+```
+
+Example:
+
+```
+10:42:01
+process=Chrome
+query=api.openai.com
+```
+
+This helps detect:
+
+```
+tracking domains
+crypto mining pools
+malware C2 servers
+```
+
+---
+
+---
+
+# 10. Detect **CDN / hosting provider**
+
+Map IP → ASN.
+
+Example:
+
+```
+github.com → Fastly
+openai.com → Cloudflare
+apple.com → Apple CDN
+```
+
+Then you can show:
+
+```
+Your apps mostly talk to:
+
+Cloudflare 38%
+AWS 24%
+Google Cloud 17%
+Apple CDN 8%
+```
+
+---
+
+# 11. Detect **long-lived connections**
+
+These often indicate:
+
+```
+WebSockets
+streaming
+VPN
+malware tunnels
+```
+
+Example:
+
+```
+process=Slack
+connection=3h12m
+protocol=TLS
+```
+
+---
+
+# 12. Track **connection bursts**
+
+Example pattern:
+
+```
+Chrome opened 52 connections in 2 seconds
+```
+
+Usually indicates:
+
+```
+page load
+tracker explosion
+```
+
+---
+
+# 13. Detect **tracker domains**
+
+Maintain a list:
+
+```
+google-analytics.com
+segment.io
+doubleclick.net
+facebook.net
+```
+
+Then show:
+
+```
+Today:
+tracking requests = 241
+blocked trackers = 0
+```
+
+---
+
+# 14. Detect **encrypted DNS**
+
+Modern browsers use:
+
+```
+DoH
+DoT
+```
+
+Example:
+
+```
+Chrome → dns.google
+Firefox → cloudflare-dns.com
+```
+
+---
+
+# 15. Build a **network fingerprint**
+
+After a few hours you could show:
+
+```
+Your network personality:
+
+Top processes:
+Chrome
+Slack
+VSCode
+
+Top domains:
+github.com
+apple.com
+google.com
+
+Top providers:
+Cloudflare
+AWS
+Google Cloud
+```
+
+Then compare to other users.
+
+---
+
+# Clever insight features for your product
+
+These would make your idea compelling.
+
+### 1️⃣ “Weird process detector”
+
+```
+Only 0.3% of users run:
+
+process=helperd
+domain=randomdomain.ru
+```
+
+---
+
+### 2️⃣ “Spyware score”
+
+```
+Your machine contacted 112 domains today.
+
+Average user: 37
+```
+
+---
+
+### 3️⃣ “Bandwidth hog”
+
+```
+Chrome used 83% of your network today
+```
+
+---
+
+### 4️⃣ “Background chatter”
+
+```
+Slack contacted servers 188 times today
+```
+
+---
+
+# The single most powerful upgrade
+
+Add **process attribution**.
+
+Without it you have:
+
+```
+github.com
+apple.com
+```
+
+With it you have:
+
+```
+VSCode → github.com
+Slack → slack.com
+Chrome → youtube.com
+```
+
+That makes your product **10× more understandable**.
+
+---
+
+Alright — this is where your idea gets **much more powerful than just “monitor my laptop.”**
+What you’re collecting (domains + processes + bytes) is exactly the raw material used by **enterprise security companies** to detect threats. If you aggregate it across many users, you can build something surprisingly valuable.
+
+Let’s walk through the concept.
+
+---
+
+# The Big Idea
+
+**Crowdsourced threat intelligence.**
+
+Every installed agent becomes a **sensor**.
+Each sensor reports:
+
+* process → domain connections
+* DNS queries
+* connection frequency
+* bytes transferred
+* IP / ASN / country
+
+Individually this data is boring.
+
+But **across thousands of machines**, patterns emerge very quickly.
+
+---
+
+# Example: detecting malware early
+
+Imagine your system sees this:
+
+```id="mal1"
+process=unknown_helper
+domain=api.sync-storage.net
+```
+
+Across all users:
+
+```id="mal2"
+Seen on: 1 machine
+```
+
+Probably harmless.
+
+But an hour later:
+
+```id="mal3"
+Seen on: 27 machines
+process name identical
+domain identical
+```
+
+That’s **extremely suspicious**.
+
+Now your system can flag:
+
+```id="mal4"
+⚠️ Emerging suspicious process detected
+```
+
+Even before antivirus vendors know.
+
+---
+
+# Example: detecting spyware
+
+Suppose your telemetry shows:
+
+```id="spy1"
+process=pdfviewer
+domain=cdn-storage-log.com
+tx=18 MB
+```
+
+And across your network:
+
+```id="spy2"
+0.01% of users
+```
+
+But the domain is receiving:
+
+```id="spy3"
+large uploads
+```
+
+That pattern is classic **data exfiltration**.
+
+Your system could automatically alert users:
+
+```id="spy4"
+⚠️ This process is uploading unusual data.
+```
+
+---
+
+# Example: detecting compromised apps
+
+Sometimes legitimate apps get compromised.
+
+Imagine this pattern appears:
+
+```id="comp1"
+process=VSCode
+domain=randomdomain.cc
+```
+
+Across users:
+
+```id="comp2"
+Seen only in newest VSCode version
+```
+
+Now you’ve discovered a **supply chain attack**.
+
+---
+
+# Example: detecting new trackers
+
+Trackers appear constantly.
+
+Your system could notice:
+
+```id="trk1"
+tracker-domain=analytics-new.io
+seen_by=140 Chrome users
+```
+
+Users could see:
+
+```id="trk2"
+⚠️ This domain appears to be a tracker.
+```
+
+---
+
+# What makes this powerful
+
+The **crowd dataset**.
+
+Security companies do exactly this.
+
+Examples:
+
+* **CrowdStrike Falcon**
+* **SentinelOne**
+
+But those products are:
+
+* enterprise-only
+* extremely expensive
+* opaque
+
+Your version could be:
+
+**“EDR for normal people.”**
+
+---
+
+# What your system would learn over time
+
+Your backend builds models like:
+
+```id="mod1"
+Process → domains
+Process → average traffic
+Process → connection frequency
+```
+
+Example baseline:
+
+```id="mod2"
+Slack:
+domains=slack.com
+connections/hour=10
+upload ratio=low
+```
+
+Now when Slack suddenly starts doing:
+
+```id="mod3"
+domain=random-ip.ru
+tx=400 MB
+```
+
+You detect:
+
+```id="mod4"
+⚠️ Behavior anomaly
+```
+
+---
+
+# Interesting analytics you could provide
+
+Users love insights like this.
+
+### “Your computer’s network personality”
+
+Example:
+
+```id="ins1"
+Most active apps:
+
+Chrome
+Slack
+VSCode
+```
+
+---
+
+### “Your tracker exposure”
+
+```id="ins2"
+Trackers contacted today: 241
+Average user: 62
+```
+
+---
+
+### “Your background traffic”
+
+```id="ins3"
+Apps talking while idle:
+
+Dropbox
+Slack
+Apple services
+```
+
+---
+
+### “Weird domains”
+
+```id="ins4"
+Only 0.4% of users contacted:
+
+data-sync-network.com
+```
+
+---
+
+# Clever detection signals you can compute
+
+These are surprisingly effective.
+
+### Rare domain score
+
+```id="sig1"
+domain popularity rank
+```
+
+Example:
+
+```id="sig2"
+github.com → common
+randomdomain.ru → rare
+```
+
+---
+
+### Process rarity
+
+```id="sig3"
+% of users running a process
+```
+
+---
+
+### Upload ratio
+
+Malware often uploads more than downloads.
+
+```id="sig4"
+tx / rx ratio
+```
+
+---
+
+### Domain churn
+
+Malware rotates domains frequently.
+
+```id="sig5"
+domains per hour
+```
+
+---
+
+### Geographic anomalies
+
+```id="sig6"
+US laptop contacting server in Belarus
+```
+
+---
+
+# Why your project could work
+
+Most consumer security tools focus on:
+
+```id="old"
+virus signatures
+```
+
+Your model focuses on:
+
+```id="new"
+behavior anomalies
+```
+
+That’s actually **modern security thinking**.
+
+---
+
+# But you must handle privacy carefully
+
+If you collect this data, users will worry.
+
+The safest model:
+
+Agent sends:
+
+```id="priv1"
+process hash
+domain
+bytes
+```
+
+Not:
+
+```id="priv2"
+file contents
+URLs
+packets
+```
+
+Also consider:
+
+* anonymized device IDs
+* opt-in sharing
+* open source agent
+
+---
+
+# The surprising insight
+
+If you get **even 5,000 machines running this agent**, you would have something extremely valuable:
+
+A **real-time map of global software behavior**.
+
+You could detect:
+
+* new malware
+* new trackers
+* compromised apps
+* spyware
+
+Sometimes **days before antivirus vendors**.
+
+---
+
+# Brutally honest advice
+
+The tech is not the hard part.
+
+You could build the agent in a weekend.
+
+The hard part is:
+
+```id="hard"
+convincing people to install it
+```
+
+The best hook is not:
+
+> “Upload your network traffic.”
+
+The hook is:
+
+**“See which apps are secretly talking to the internet.”**
+
+People are very curious about that.
+
+---
+
+If you'd like, I can also show you something **very interesting and slightly mind-blowing**:
+
+There’s a way to make this **100× easier to adopt** by turning it into a **menu bar app that reveals hidden network activity in real time**, and that product would spread much faster than a background agent.
+
+
+read prompts/0007.txt and let's add more of these features in phases. Don't try and do everything in
+  there at once. Come up with a plan and start on the first steps. When you reach a good stopping point
+  write out the next steps in next_steps.md
