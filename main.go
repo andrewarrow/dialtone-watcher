@@ -44,6 +44,7 @@ func run(args []string) error {
 		if err != nil {
 			return err
 		}
+		options.TestMode = true
 		return watcher.RunDaemon(watcher.RunOptions{TestMode: options.TestMode})
 	case "help", "-h", "--help":
 		printHelp()
