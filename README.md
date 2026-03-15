@@ -14,6 +14,7 @@ It stores a local summary, and it can periodically POST compact rollups to Dialt
 
 - Demo: <https://dialtoneapp.com/demo>
 - Developer: Andrew Arrow <https://github.com/andrewarrow/>
+- Coding agent: Codex ("Dex"), GPT-5.4 medium
 
 This project is opinionated in a useful way: collect enough to make a machine profile interesting, but not so much that the backend gets crushed or the user has to wonder whether the app is doing secret goblin behavior.
 
