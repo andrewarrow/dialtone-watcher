@@ -1,0 +1,97 @@
+at the /watcher below the "Machine ID" section add a section for "Your Data" and show mockups of what
+  data this app will eventually have. Read src/index.html and ~/os/dialtone-watcher/README.md  here is
+  what the program is doing now ./dialtone-watcher summary
+  Machine ID: fc5f8856-a2b3-42df-9868-bc4eec56c513
+  Machine ID File: /Users/aa/Library/Caches/dialtone-watcher/machine-id.json
+
+  Watcher running: true
+  Watcher pid: 16869
+  Polls completed: 506
+  Tracked processes: 980
+  Tracked domains: 24
+  Tracked connections: 24
+  Hardware: aas-MacBook-Pro.local on darwin (Apple M4 Max, 36.0 GB RAM, 14 logical cores)
+  Interesting processes:
+    1. pid=83479 name=com.apple.Virtualization.VirtualMachine cpu=5.93% rss=6914.4 MB seen=506 polls
+    2. pid=70214 name=plugin-container cpu=5.63% rss=2039.6 MB seen=506 polls
+    3. pid=61421 name=firefox cpu=2.57% rss=843.0 MB seen=506 polls
+    4. pid=61783 name=Firefox GPU Helper cpu=2.53% rss=294.4 MB seen=506 polls
+    5. pid=33677 name=dialtone-watcher cpu=2.43% rss=18.1 MB seen=2 polls
+    6. pid=6784 name=plugin-container cpu=2.07% rss=744.2 MB seen=506 polls
+  Interesting domains:
+    1. domain=cloudflare.com ip=172.64.148.197 rx=10.7 MiB tx=50.1 KiB seen=108 polls
+    2. domain=cloudflare.com ip=172.64.151.110 rx=3.8 MiB tx=6.6 KiB seen=71 polls
+    3. domain=cloudflare.com ip=172.64.155.209 rx=648.1 KiB tx=1.1 MiB seen=256 polls
+    4. domain=cloudflare.com ip=172.64.150.129 rx=1.6 MiB tx=5.5 KiB seen=38 polls
+    5. domain=microsoft.com ip=13.107.213.69 rx=973.6 KiB tx=143.5 KiB seen=100 polls
+    6. domain=nuq04s39-in-f14.1e100.net ip=142.250.189.238 rx=575.0 KiB tx=113.2 KiB seen=90 polls
+    7. domain=apple.com.pa ip=17.253.144.10 rx=390.2 KiB tx=117.6 KiB seen=102 polls
+    8. domain=ec2-44-229-222-36.us-west-2.compute.amazonaws.com ip=44.229.222.36 rx=280.5 KiB tx=137.0
+  KiB seen=506 polls
+    9. domain=ripe.net ip=149.154.175.55 rx=297.7 KiB tx=94.6 KiB seen=506 polls
+    10. domain=cloudflare.com ip=172.66.0.227 rx=245.3 KiB tx=116.8 KiB seen=38 polls
+    11. domain=apple.com ip=17.57.144.121 rx=72.9 KiB tx=172.2 KiB seen=506 polls
+    12. domain=cloudflare.com ip=104.18.39.21 rx=33.2 KiB tx=67.1 KiB seen=1076 polls
+    13. domain=31.224.186.35.bc.googleusercontent.com ip=35.186.224.31 rx=13.2 KiB tx=68.6 KiB seen=503
+  polls
+    14. domain=cloudflare.com ip=104.18.32.47 rx=3.9 KiB tx=69.9 KiB seen=8 polls
+    15. domain=pnsfoa-ae-in-f3.1e100.net ip=142.251.214.35 rx=41.1 KiB tx=26.5 KiB seen=117 polls
+    16. domain=ac88393aca5853df7.awsglobalaccelerator.com ip=13.248.212.111 rx=25.9 KiB tx=13.2 KiB
+  seen=506 polls
+    17. domain=uslax1-edge-get-012.b.aaplimg.com ip=17.253.83.111 rx=26.7 KiB tx=10.2 KiB seen=236
+  polls
+    18. domain=ec2-3-90-158-208.compute-1.amazonaws.com ip=3.90.158.208 rx=11.8 KiB tx=24.4 KiB
+  seen=307 polls
+    19. domain=uslax1-edge-get-002.b.aaplimg.com ip=17.253.83.71 rx=21.9 KiB tx=3.8 KiB seen=506 polls
+    20. domain=93.243.107.34.bc.googleusercontent.com ip=34.107.243.93 rx=6.9 KiB tx=14.0 KiB seen=571
+  polls
+    21. domain=cloudflare.com ip=162.159.140.229 rx=12.6 KiB tx=6.7 KiB seen=102 polls
+    22. domain=twitter.com ip=104.244.43.131 rx=8.2 KiB tx=2.8 KiB seen=38 polls
+    23. domain=ec2-52-38-240-55.us-west-2.compute.amazonaws.com ip=52.38.240.55 rx=7.0 KiB tx=3.5 KiB
+  seen=34 polls
+    24. domain=pnsfoa-ae-in-f3.1e100.net rx=3.9 KiB tx=5.4 KiB seen=2 polls
+  Interesting connections:
+    1. pid=61421 name=firefox protocol=HTTPS domain=cloudflare.com ip=172.64.148.197 rx=10.7 MiB
+  tx=50.1 KiB seen=108 polls
+    2. pid=61421 name=firefox protocol=HTTPS domain=cloudflare.com ip=172.64.151.110 rx=3.8 MiB tx=6.6
+  KiB seen=71 polls
+    3. pid=61421 name=firefox protocol=HTTPS domain=cloudflare.com ip=172.64.150.129 rx=1.6 MiB tx=5.5
+  KiB seen=38 polls
+    4. pid=83448 name=com.docker.backend protocol=HTTPS domain=microsoft.com ip=13.107.213.69 rx=973.6
+  KiB tx=143.5 KiB seen=100 polls
+    5. pid=83448 name=com.docker.backend protocol=HTTPS domain=nuq04s39-in-f14.1e100.net
+  ip=142.250.189.238 rx=575.0 KiB tx=113.2 KiB seen=90 polls
+    6. pid=31405 name=codex protocol=HTTPS domain=cloudflare.com ip=172.64.155.209 rx=422.4 KiB
+  tx=170.9 KiB seen=122 polls
+    7. pid=83448 name=com.docker.backend protocol=HTTPS domain=apple.com.pa ip=17.253.144.10 rx=390.2
+  KiB tx=117.6 KiB seen=102 polls
+    8. pid=7236 name=Slack Helper protocol=HTTPS domain=ec2-44-229-222-36.us-west-
+  2.compute.amazonaws.com ip=44.229.222.36 rx=280.5 KiB tx=137.0 KiB seen=506 polls
+    9. pid=1320 name=Telegram protocol=HTTPS domain=ripe.net ip=149.154.175.55 rx=297.7 KiB tx=94.6 KiB
+  seen=506 polls
+    10. pid=61421 name=firefox protocol=HTTPS domain=cloudflare.com ip=172.66.0.227 rx=245.3 KiB
+  tx=116.8 KiB seen=38 polls
+    11. pid=553 name=apsd protocol=TCP domain=apple.com ip=17.57.144.121 rx=72.9 KiB tx=172.2 KiB
+  seen=506 polls
+    12. pid=61421 name=firefox protocol=HTTPS domain=cloudflare.com ip=104.18.39.21 rx=33.2 KiB tx=67.1
+  KiB seen=1076 polls
+    13. pid=62578 name=com.apple.WebKit.Networking protocol=HTTPS
+  domain=31.224.186.35.bc.googleusercontent.com ip=35.186.224.31 rx=13.2 KiB tx=68.6 KiB seen=503 polls
+    14. pid=31405 name=codex protocol=HTTPS domain=cloudflare.com ip=104.18.32.47 rx=3.9 KiB tx=69.9
+  KiB seen=8 polls
+    15. pid=61421 name=firefox protocol=HTTPS domain=pnsfoa-ae-in-f3.1e100.net ip=142.251.214.35
+  rx=41.1 KiB tx=26.5 KiB seen=117 polls
+    16. pid=76425 name=Signal Helper (Renderer) protocol=HTTPS
+  domain=ac88393aca5853df7.awsglobalaccelerator.com ip=13.248.212.111 rx=25.9 KiB tx=13.2 KiB seen=506
+  polls
+    17. pid=1461 name=WeatherWidget protocol=HTTPS domain=uslax1-edge-get-012.b.aaplimg.com
+  ip=17.253.83.111 rx=26.7 KiB tx=10.2 KiB seen=236 polls
+    18. pid=7236 name=Slack Helper protocol=HTTPS domain=ec2-3-90-158-208.compute-1.amazonaws.com
+  ip=3.90.158.208 rx=11.8 KiB tx=24.4 KiB seen=307 polls
+    19. pid=1461 name=WeatherWidget protocol=HTTPS domain=uslax1-edge-get-002.b.aaplimg.com
+  ip=17.253.83.71 rx=21.9 KiB tx=3.8 KiB seen=506 polls
+    20. pid=61421 name=firefox protocol=HTTPS domain=93.243.107.34.bc.googleusercontent.com
+  ip=34.107.243.93 rx=6.9 KiB tx=14.0 KiB seen=571 polls  but be creative and make this Your Data
+  section aspiration vs reality. Make it very pretty and compelling but don't go too far yet. Read ~/
+  os/dialtone-watcher/next_steps.md for where this is going but just make this data display for what we
+  have so far
