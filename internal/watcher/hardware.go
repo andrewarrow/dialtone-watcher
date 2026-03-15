@@ -1,6 +1,8 @@
 package watcher
 
 import (
+	"strings"
+
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/host"
@@ -34,7 +36,7 @@ func CollectHardwareProfile() (HardwareProfile, error) {
 
 	profile.Hostname = hostInfo.Hostname
 	profile.OS = hostInfo.OS
-	profile.Platform = hostInfo.Platform
+	profile.Platform = normalizePlatform(hostInfo.OS, hostInfo.Platform)
 	profile.PlatformVersion = hostInfo.PlatformVersion
 	profile.KernelVersion = hostInfo.KernelVersion
 	profile.UptimeSeconds = hostInfo.Uptime
@@ -69,4 +71,12 @@ func CollectHardwareProfile() (HardwareProfile, error) {
 	}
 
 	return profile, nil
+}
+
+func normalizePlatform(osName, platform string) string {
+	if strings.EqualFold(strings.TrimSpace(osName), "darwin") {
+		return "macOS"
+	}
+
+	return platform
 }

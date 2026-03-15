@@ -1,0 +1,9 @@
+good run
+
+npx wrangler d1 execute aa --remote --command="SELECT * FROM watcher_payloads"
+npx wrangler d1 execute aa --remote --command="SELECT * FROM watcher_machine_snapshots"
+npx wrangler d1 execute aa --remote --command="SELECT * FROM watcher_process_snapshots"
+npx wrangler d1 execute aa --remote --command="SELECT * FROM watcher_domain_snapshots"
+npx wrangler d1 execute aa --remote --command="SELECT * FROM watcher_connection_snapshots"
+
+and make sure all the data looks right
