@@ -452,6 +452,9 @@ func allUploadDomains(records map[string]*domainUploadRecord) []domainUploadReco
 		if record == nil {
 			continue
 		}
+		if normalizeResolvedHost(record.DisplayName) == "" && isPublicIP(record.Domain) {
+			continue
+		}
 		items = append(items, *record)
 	}
 
@@ -475,6 +478,9 @@ func allUploadConnections(records map[string]*connectionUploadRecord) []connecti
 	items := make([]connectionUploadRecord, 0, len(records))
 	for _, record := range records {
 		if record == nil {
+			continue
+		}
+		if normalizeResolvedHost(record.DisplayName) == "" && isPublicIP(record.Domain) {
 			continue
 		}
 		items = append(items, *record)

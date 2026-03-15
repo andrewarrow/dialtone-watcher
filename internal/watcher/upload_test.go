@@ -104,7 +104,7 @@ func TestUploaderBuildPayloadIncludesBoundedPeriodSummary(t *testing.T) {
 	}
 }
 
-func TestUploaderBuildPayloadIncludesAllProcessesDomainsAndConnections(t *testing.T) {
+func TestUploaderBuildPayloadIncludesAllResolvedProcessesDomainsAndConnections(t *testing.T) {
 	startedAt := time.Date(2026, time.March, 15, 10, 0, 0, 0, time.UTC)
 	endedAt := startedAt.Add(30 * time.Second)
 
@@ -142,6 +142,7 @@ func TestUploaderBuildPayloadIncludesAllProcessesDomainsAndConnections(t *testin
 			domains: map[string]*domainUploadRecord{
 				"cloudflare.com": {
 					Domain:    "cloudflare.com",
+					DisplayName: "cloudflare.com",
 					RXBytes:   2048,
 					TXBytes:   64,
 					PollsSeen: 4,
@@ -158,6 +159,7 @@ func TestUploaderBuildPayloadIncludesAllProcessesDomainsAndConnections(t *testin
 					PID:         101,
 					ProcessName: "firefox",
 					Domain:      "cloudflare.com",
+					DisplayName: "cloudflare.com",
 					Protocol:    "HTTPS",
 					RXBytes:     2048,
 					TXBytes:     64,
@@ -197,17 +199,17 @@ func TestUploaderBuildPayloadIncludesAllProcessesDomainsAndConnections(t *testin
 	if len(payload.Processes) != 2 {
 		t.Fatalf("len(payload.Processes) = %d, want 2", len(payload.Processes))
 	}
-	if len(payload.Domains) != 2 {
-		t.Fatalf("len(payload.Domains) = %d, want 2", len(payload.Domains))
+	if len(payload.Domains) != 1 {
+		t.Fatalf("len(payload.Domains) = %d, want 1 after excluding unresolved IPs", len(payload.Domains))
 	}
-	if len(payload.Connections) != 2 {
-		t.Fatalf("len(payload.Connections) = %d, want 2", len(payload.Connections))
+	if len(payload.Connections) != 1 {
+		t.Fatalf("len(payload.Connections) = %d, want 1 after excluding unresolved IPs", len(payload.Connections))
 	}
-	if payload.Domains[1].Domain != "104.16.132.229" {
-		t.Fatalf("payload.Domains[1].Domain = %q, want unresolved public IP to be preserved", payload.Domains[1].Domain)
+	if payload.Domains[0].Domain != "cloudflare.com" {
+		t.Fatalf("payload.Domains[0].Domain = %q, want resolved hostname entry", payload.Domains[0].Domain)
 	}
-	if payload.Connections[1].Domain != "104.16.132.229" {
-		t.Fatalf("payload.Connections[1].Domain = %q, want unresolved public IP to be preserved", payload.Connections[1].Domain)
+	if payload.Connections[0].Domain != "cloudflare.com" {
+		t.Fatalf("payload.Connections[0].Domain = %q, want resolved hostname entry", payload.Connections[0].Domain)
 	}
 }
 
