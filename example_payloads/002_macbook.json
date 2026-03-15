@@ -1,0 +1,422 @@
+{
+  "schema_version": 1,
+  "sent_at": "2026-03-15T14:30:16.198686Z",
+  "period": {
+    "started_at": "2026-03-15T14:30:04.513974Z",
+    "ended_at": "2026-03-15T14:30:16.198686Z",
+    "duration_seconds": 11,
+    "polls": 3
+  },
+  "machine": {
+    "hostname": "aas-MacBook-Pro.local",
+    "os": "darwin",
+    "platform": "darwin",
+    "platform_version": "26.3.1",
+    "kernel_version": "25.3.0",
+    "hardware": {
+      "cpu": {
+        "model": "Apple M4 Max",
+        "model_normalized": "apple_m4_max",
+        "physical_cores": 14,
+        "logical_cores": 14,
+        "frequency_mhz": 4
+      },
+      "memory": {
+        "total_gb": 36
+      },
+      "disk": {
+        "total_gb": 4697.04981136322
+      }
+    }
+  },
+  "summary": {
+    "running": false,
+    "poll_count": 3,
+    "tracked_process_count": 971,
+    "tracked_domain_count": 16,
+    "tracked_connection_count": 16,
+    "total_rx_bytes": 580765,
+    "total_tx_bytes": 610199
+  },
+  "processes": [
+    {
+      "pid": 65487,
+      "name": "dialtone-watcher",
+      "command": "./dialtone-watcher __run",
+      "average_cpu_percent": 23.94769145885292,
+      "peak_cpu_percent": 66.10082774896695,
+      "average_memory_rss_mb": 18.171875,
+      "peak_memory_rss_mb": 19.453125,
+      "polls_seen": 3
+    },
+    {
+      "pid": 83479,
+      "name": "com.apple.Virtualization.VirtualMachine",
+      "command": "/System/Library/Frameworks/Virtualization.framework/Versions/A/XPCServices/com.apple.Virtualization.VirtualMachine.xpc/Contents/MacOS/com.apple.Virtualization.VirtualMachine",
+      "average_cpu_percent": 5.084695157916342,
+      "peak_cpu_percent": 5.084901456361329,
+      "average_memory_rss_mb": 5733.989583333333,
+      "peak_memory_rss_mb": 5734.09375,
+      "polls_seen": 3
+    },
+    {
+      "pid": 70214,
+      "name": "plugin-container",
+      "command": "/Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsHandle 0:45973 -prefMapHandle 1:283485 -jsInitHandle 2:227672 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20260309125808 -ipcHandle 0 -initialChannelId {01212851-86bd-4a1b-bcd6-042e6a55a1a6} -parentPid 61421 -crashReporter gecko-crash-server-pipe.61421 -crashHelper 1 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/aa/Library/Application Support/Firefox/Profiles/5kjrgv5k.default-release org.mozilla.machname.408229859 10 tab",
+      "average_cpu_percent": 3.074223834029316,
+      "peak_cpu_percent": 3.074418410834342,
+      "average_memory_rss_mb": 1772.2447916666667,
+      "peak_memory_rss_mb": 1772.25,
+      "polls_seen": 3
+    },
+    {
+      "pid": 7237,
+      "name": "Slack Helper (Renderer)",
+      "command": "/Applications/Slack.app/Contents/Frameworks/Slack Helper (Renderer).app/Contents/MacOS/Slack Helper (Renderer) --type=renderer --user-data-dir=/Users/aa/Library/Application Support/Slack --standard-schemes=app,slack-webapp-dev --enable-sandbox --secure-schemes=app,slack-webapp-dev,sentry-ipc --bypasscsp-schemes=slack-webapp-dev,sentry-ipc --cors-schemes=slack-webapp-dev,sentry-ipc --fetch-schemes=slack-webapp-dev,sentry-ipc --service-worker-schemes=slack-webapp-dev --app-path=/Applications/Slack.app/Contents/Resources/app.asar --enable-sandbox --enable-blink-features=ExperimentalJSProfiler --disable-blink-features=CustomizableSelect --force-color-profile=display-p3-d65 --disable-gpu-compositing --lang=en-US --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=4 --time-ticks-at-unix-epoch=-1772890712652938 --launch-time-ticks=858259150 --shared-files --field-trial-handle=1718379636,r,810201854377393680,11290484064260691900,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,PdfUseShowSaveFilePicker,ScreenCaptureKitMac,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma --disable-features=AllowAggressiveThrottlingWithWebSocket,CalculateNativeWinOcclusion,EnableWatermarkView,EnumerateDevicesRelaxedCache,HardwareMediaKeyHandling,IntensiveWakeUpThrottling,LocalNetworkAccessChecks,LogJsConsoleMessages,MacWebContentsOcclusion,PostQuantumKyber,RequestInitiatorSiteLockEnfocement,ScreenAIOCREnabled,SkipEmptyDisplayHotplugEvent,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation,WebRtcHideLocalIpsWithMdns,WinRetrieveSuggestionsOnlyOnDemand --variations-seed-version --trace-process-track-uuid=3190708990060038890 --window-type=main --seatbelt-client=68",
+      "average_cpu_percent": 1.600555985001937,
+      "peak_cpu_percent": 1.600566832484154,
+      "average_memory_rss_mb": 738.859375,
+      "peak_memory_rss_mb": 738.890625,
+      "polls_seen": 3
+    },
+    {
+      "pid": 61421,
+      "name": "firefox",
+      "command": "/Applications/Firefox.app/Contents/MacOS/firefox -foreground",
+      "average_cpu_percent": 1.5841125449702897,
+      "peak_cpu_percent": 1.584154645243123,
+      "average_memory_rss_mb": 902.484375,
+      "peak_memory_rss_mb": 902.828125,
+      "polls_seen": 3
+    },
+    {
+      "pid": 61783,
+      "name": "Firefox GPU Helper",
+      "command": "/Applications/Firefox.app/Contents/MacOS/gpu-helper.app/Contents/MacOS/Firefox GPU Helper -parentBuildID 20260309125808 -prefsHandle 0:42928 -prefMapHandle 1:283485 -sbStartup -sbAppPath /Applications/Firefox.app -ipcHandle 0 -initialChannelId {79c2f98e-58b6-4f88-8a07-9ea064035d9a} -parentPid 61421 -crashReporter gecko-crash-server-pipe.61421 -crashHelper 1 -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/aa/Library/Application Support/Firefox/Profiles/5kjrgv5k.default-release org.mozilla.machname.27045462 1 gpu",
+      "average_cpu_percent": 1.3374967780897773,
+      "peak_cpu_percent": 1.33757848100599,
+      "average_memory_rss_mb": 287.203125,
+      "peak_memory_rss_mb": 287.203125,
+      "polls_seen": 3
+    },
+    {
+      "pid": 7235,
+      "name": "Slack Helper",
+      "command": "/Applications/Slack.app/Contents/Frameworks/Slack Helper.app/Contents/MacOS/Slack Helper --type=gpu-process --user-data-dir=/Users/aa/Library/Application Support/Slack --gpu-preferences=SAAAAAAAAAAgAQAEAAAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAACAAAAAAAAAAIAAAAAAAAAA== --use-gl=disabled --shared-files --field-trial-handle=1718379636,r,810201854377393680,11290484064260691900,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,PdfUseShowSaveFilePicker,ScreenCaptureKitMac,ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma --disable-features=AllowAggressiveThrottlingWithWebSocket,CalculateNativeWinOcclusion,EnableWatermarkView,EnumerateDevicesRelaxedCache,HardwareMediaKeyHandling,IntensiveWakeUpThrottling,LocalNetworkAccessChecks,LogJsConsoleMessages,MacWebContentsOcclusion,PostQuantumKyber,RequestInitiatorSiteLockEnfocement,ScreenAIOCREnabled,SkipEmptyDisplayHotplugEvent,SpareRendererForSitePerProcess,TimeoutHangingVideoCaptureStarts,TraceSiteInstanceGetProcessCreation,WebRtcHideLocalIpsWithMdns,WinRetrieveSuggestionsOnlyOnDemand --variations-seed-version --trace-process-track-uuid=3190708988185955192 --seatbelt-client=38",
+      "average_cpu_percent": 1.2879714024830267,
+      "peak_cpu_percent": 1.2879807011435094,
+      "average_memory_rss_mb": 202.046875,
+      "peak_memory_rss_mb": 202.046875,
+      "polls_seen": 3
+    },
+    {
+      "pid": 1286,
+      "name": "duetexpertd",
+      "command": "/usr/libexec/duetexpertd",
+      "average_cpu_percent": 1.1879730561652042,
+      "peak_cpu_percent": 1.1879812666981582,
+      "average_memory_rss_mb": 82.375,
+      "peak_memory_rss_mb": 82.375,
+      "polls_seen": 3
+    },
+    {
+      "pid": 1226,
+      "name": "mediaanalysisd",
+      "command": "/System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd",
+      "average_cpu_percent": 1.1701059708215134,
+      "peak_cpu_percent": 1.1701142866178664,
+      "average_memory_rss_mb": 100.40625,
+      "peak_memory_rss_mb": 100.40625,
+      "polls_seen": 3
+    },
+    {
+      "pid": 1287,
+      "name": "Terminal",
+      "command": "/System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal",
+      "average_cpu_percent": 1.1356204673216364,
+      "peak_cpu_percent": 1.135678069837843,
+      "average_memory_rss_mb": 188.25520833333334,
+      "peak_memory_rss_mb": 188.4375,
+      "polls_seen": 3
+    },
+    {
+      "pid": 62584,
+      "name": "com.apple.WebKit.WebContent",
+      "command": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+      "average_cpu_percent": 0.8486965624943784,
+      "peak_cpu_percent": 0.8487023036302888,
+      "average_memory_rss_mb": 521.796875,
+      "peak_memory_rss_mb": 521.796875,
+      "polls_seen": 3
+    },
+    {
+      "pid": 65077,
+      "name": "mdworker_shared",
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared -s mdworker -c MDSImporterWorker -m com.apple.mdworker.shared",
+      "average_cpu_percent": 0.7350649600416092,
+      "peak_cpu_percent": 1.0869668150019942,
+      "average_memory_rss_mb": 21.078125,
+      "peak_memory_rss_mb": 21.078125,
+      "polls_seen": 3
+    }
+  ],
+  "domains": [
+    {
+      "domain": "17.57.144.121",
+      "display_name": "apple.com",
+      "rx_bytes": 160103,
+      "tx_bytes": 318459,
+      "polls_seen": 3
+    },
+    {
+      "domain": "44.226.178.27",
+      "display_name": "ec2-44-226-178-27.us-west-2.compute.amazonaws.com",
+      "rx_bytes": 182900,
+      "tx_bytes": 89520,
+      "polls_seen": 3
+    },
+    {
+      "domain": "149.154.175.55",
+      "display_name": "ripe.net",
+      "rx_bytes": 50340,
+      "tx_bytes": 109776,
+      "polls_seen": 3
+    },
+    {
+      "domain": "76.223.92.165",
+      "display_name": "ac88393aca5853df7.awsglobalaccelerator.com",
+      "rx_bytes": 31206,
+      "tx_bytes": 16211,
+      "polls_seen": 3
+    },
+    {
+      "domain": "13.107.213.69",
+      "display_name": "microsoft.com",
+      "rx_bytes": 28772,
+      "tx_bytes": 4032,
+      "polls_seen": 2
+    },
+    {
+      "domain": "35.186.224.31",
+      "display_name": "31.224.186.35.bc.googleusercontent.com",
+      "rx_bytes": 5389,
+      "tx_bytes": 24068,
+      "polls_seen": 3
+    },
+    {
+      "domain": "17.253.83.105",
+      "display_name": "uslax1-edge-get-011.a.aaplimg.com",
+      "rx_bytes": 22564,
+      "tx_bytes": 3849,
+      "polls_seen": 3
+    },
+    {
+      "domain": "17.253.83.71",
+      "display_name": "uslax1-edge-get-002.b.aaplimg.com",
+      "rx_bytes": 22459,
+      "tx_bytes": 3852,
+      "polls_seen": 3
+    },
+    {
+      "domain": "157.240.11.54",
+      "display_name": "whatsapp-chatd-edge-shv-02-lax3.facebook.com",
+      "rx_bytes": 11654,
+      "tx_bytes": 14286,
+      "polls_seen": 3
+    },
+    {
+      "domain": "17.253.83.127",
+      "display_name": "uslax1-edge-get-016.b.aaplimg.com",
+      "rx_bytes": 17787,
+      "tx_bytes": 6487,
+      "polls_seen": 3
+    },
+    {
+      "domain": "142.250.191.46",
+      "display_name": "nuq04s42-in-f14.1e100.net",
+      "rx_bytes": 17070,
+      "tx_bytes": 3360,
+      "polls_seen": 3
+    },
+    {
+      "domain": "17.248.193.57",
+      "display_name": "apple.com",
+      "rx_bytes": 11222,
+      "tx_bytes": 5801,
+      "polls_seen": 3
+    },
+    {
+      "domain": "17.253.144.10",
+      "display_name": "apple.com.mx",
+      "rx_bytes": 11337,
+      "tx_bytes": 3356,
+      "polls_seen": 3
+    },
+    {
+      "domain": "34.107.243.93",
+      "display_name": "93.243.107.34.bc.googleusercontent.com",
+      "rx_bytes": 1314,
+      "tx_bytes": 2199,
+      "polls_seen": 3
+    },
+    {
+      "domain": "52.13.138.150",
+      "display_name": "ec2-52-13-138-150.us-west-2.compute.amazonaws.com",
+      "rx_bytes": 686,
+      "tx_bytes": 2030,
+      "polls_seen": 3
+    }
+  ],
+  "connections": [
+    {
+      "pid": 553,
+      "process_name": "apsd",
+      "domain": "17.57.144.121",
+      "display_name": "apple.com",
+      "protocol": "TCP",
+      "rx_bytes": 160103,
+      "tx_bytes": 318459,
+      "polls_seen": 3
+    },
+    {
+      "pid": 7236,
+      "process_name": "Slack Helper",
+      "domain": "44.226.178.27",
+      "display_name": "ec2-44-226-178-27.us-west-2.compute.amazonaws.com",
+      "protocol": "HTTPS",
+      "rx_bytes": 182900,
+      "tx_bytes": 89520,
+      "polls_seen": 3
+    },
+    {
+      "pid": 1320,
+      "process_name": "Telegram",
+      "domain": "149.154.175.55",
+      "display_name": "ripe.net",
+      "protocol": "HTTPS",
+      "rx_bytes": 50340,
+      "tx_bytes": 109776,
+      "polls_seen": 3
+    },
+    {
+      "pid": 76425,
+      "process_name": "Signal Helper (Renderer)",
+      "domain": "76.223.92.165",
+      "display_name": "ac88393aca5853df7.awsglobalaccelerator.com",
+      "protocol": "HTTPS",
+      "rx_bytes": 31206,
+      "tx_bytes": 16211,
+      "polls_seen": 3
+    },
+    {
+      "pid": 83448,
+      "process_name": "com.docker.backend",
+      "domain": "13.107.213.69",
+      "display_name": "microsoft.com",
+      "protocol": "HTTPS",
+      "rx_bytes": 28772,
+      "tx_bytes": 4032,
+      "polls_seen": 2
+    },
+    {
+      "pid": 62578,
+      "process_name": "com.apple.WebKit.Networking",
+      "domain": "35.186.224.31",
+      "display_name": "31.224.186.35.bc.googleusercontent.com",
+      "protocol": "HTTPS",
+      "rx_bytes": 5389,
+      "tx_bytes": 24068,
+      "polls_seen": 3
+    },
+    {
+      "pid": 1461,
+      "process_name": "WeatherWidget",
+      "domain": "17.253.83.105",
+      "display_name": "uslax1-edge-get-011.a.aaplimg.com",
+      "protocol": "HTTPS",
+      "rx_bytes": 22564,
+      "tx_bytes": 3849,
+      "polls_seen": 3
+    },
+    {
+      "pid": 1461,
+      "process_name": "WeatherWidget",
+      "domain": "17.253.83.71",
+      "display_name": "uslax1-edge-get-002.b.aaplimg.com",
+      "protocol": "HTTPS",
+      "rx_bytes": 22459,
+      "tx_bytes": 3852,
+      "polls_seen": 3
+    },
+    {
+      "pid": 43187,
+      "process_name": "WhatsApp",
+      "domain": "157.240.11.54",
+      "display_name": "whatsapp-chatd-edge-shv-02-lax3.facebook.com",
+      "protocol": "TCP",
+      "rx_bytes": 11654,
+      "tx_bytes": 14286,
+      "polls_seen": 3
+    },
+    {
+      "pid": 1461,
+      "process_name": "WeatherWidget",
+      "domain": "17.253.83.127",
+      "display_name": "uslax1-edge-get-016.b.aaplimg.com",
+      "protocol": "HTTPS",
+      "rx_bytes": 17787,
+      "tx_bytes": 6487,
+      "polls_seen": 3
+    },
+    {
+      "pid": 83448,
+      "process_name": "com.docker.backend",
+      "domain": "142.250.191.46",
+      "display_name": "nuq04s42-in-f14.1e100.net",
+      "protocol": "HTTPS",
+      "rx_bytes": 17070,
+      "tx_bytes": 3360,
+      "polls_seen": 3
+    },
+    {
+      "pid": 651,
+      "process_name": "syspolicyd",
+      "domain": "17.248.193.57",
+      "display_name": "apple.com",
+      "protocol": "HTTPS",
+      "rx_bytes": 11222,
+      "tx_bytes": 5801,
+      "polls_seen": 3
+    },
+    {
+      "pid": 83448,
+      "process_name": "com.docker.backend",
+      "domain": "17.253.144.10",
+      "display_name": "apple.com.mx",
+      "protocol": "HTTPS",
+      "rx_bytes": 11337,
+      "tx_bytes": 3356,
+      "polls_seen": 3
+    },
+    {
+      "pid": 61421,
+      "process_name": "firefox",
+      "domain": "34.107.243.93",
+      "display_name": "93.243.107.34.bc.googleusercontent.com",
+      "protocol": "HTTPS",
+      "rx_bytes": 1314,
+      "tx_bytes": 2199,
+      "polls_seen": 3
+    },
+    {
+      "pid": 7236,
+      "process_name": "Slack Helper",
+      "domain": "52.13.138.150",
+      "display_name": "ec2-52-13-138-150.us-west-2.compute.amazonaws.com",
+      "protocol": "HTTPS",
+      "rx_bytes": 686,
+      "tx_bytes": 2030,
+      "polls_seen": 3
+    }
+  ]
+}

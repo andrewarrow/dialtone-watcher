@@ -1,0 +1,9 @@
+look at ~/os/dialtone-watcher/example_payloads/* and the endpoint here for /api/v1/watcher POST we
+  are collection this json and just storing it right now in watcher_payloads table. we need to use it
+  to make src/pages/Demo/index.jsx real. What do you recommend either keep this endpoint like it is
+  just adding the json to this table and a background process to process it or should we parse the json
+  as it comes in? We'll need new migration to store each data point carefully in the right way to make
+  the queries needed for the Demo page work efficently, don't forget indexes. Make a new /explore path
+  in the web UI with the first version of what's in Demo but don't try and do the entire thing at once.
+  Get just a simple version of /explore working that does some simple queries against this new table
+  you are creating
