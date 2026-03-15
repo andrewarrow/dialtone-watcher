@@ -306,7 +306,7 @@ You should still treat process names, domains, and command lines as sensitive te
 
 ## How It Got Built
 
-This repo is unusually honest because the prompt trail is still here in `prompts/`.
+This repo is unusually honest because the prompt trail is still here in [`prompts/`](https://github.com/andrewarrow/dialtone-watcher/tree/main/prompts).
 
 The rough sequence:
 
@@ -393,11 +393,11 @@ Stop it:
 ./dialtone-watcher stop
 ```
 
-Linux notes and Docker-based Linux test steps are in [`linux.md`](/Users/aa/os/dialtone-watcher/linux.md).
+Linux notes and Docker-based Linux test steps are in [`linux.md`](https://github.com/andrewarrow/dialtone-watcher/blob/main/linux.md).
 
 ## What’s Next
 
-The next useful layers are already sketched in [`next_steps.md`](/Users/aa/os/dialtone-watcher/next_steps.md):
+The next useful layers are already sketched in [`next_steps.md`](https://github.com/andrewarrow/dialtone-watcher/blob/main/next_steps.md):
 
 - connection lifecycle tracking
 - process-level network totals
