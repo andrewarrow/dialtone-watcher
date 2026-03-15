@@ -104,6 +104,113 @@ func TestUploaderBuildPayloadIncludesBoundedPeriodSummary(t *testing.T) {
 	}
 }
 
+func TestUploaderBuildPayloadIncludesAllProcessesDomainsAndConnections(t *testing.T) {
+	startedAt := time.Date(2026, time.March, 15, 10, 0, 0, 0, time.UTC)
+	endedAt := startedAt.Add(30 * time.Second)
+
+	u := &uploader{
+		machineID: "machine-123",
+		config: uploadConfig{
+			Enabled:  true,
+			Endpoint: "http://example.invalid",
+			Interval: time.Minute,
+			Timeout:  time.Second,
+		},
+		window: uploadWindow{
+			startedAt: startedAt,
+			polls:     6,
+			processes: map[int32]*processUploadRecord{
+				101: {
+					PID:          101,
+					Name:         "firefox",
+					AverageCPU:   4.2,
+					PeakCPU:      9.5,
+					AverageRSSMB: 700,
+					PeakRSSMB:    820,
+					PollsSeen:    6,
+				},
+				202: {
+					PID:          202,
+					Name:         "slack",
+					AverageCPU:   2.1,
+					PeakCPU:      4.0,
+					AverageRSSMB: 400,
+					PeakRSSMB:    450,
+					PollsSeen:    6,
+				},
+			},
+			domains: map[string]*domainUploadRecord{
+				"cloudflare.com": {
+					Domain:    "cloudflare.com",
+					RXBytes:   2048,
+					TXBytes:   64,
+					PollsSeen: 4,
+				},
+				"104.16.132.229": {
+					Domain:    "104.16.132.229",
+					RXBytes:   1024,
+					TXBytes:   32,
+					PollsSeen: 2,
+				},
+			},
+			connections: map[string]*connectionUploadRecord{
+				"101|HTTPS|cloudflare.com": {
+					PID:         101,
+					ProcessName: "firefox",
+					Domain:      "cloudflare.com",
+					Protocol:    "HTTPS",
+					RXBytes:     2048,
+					TXBytes:     64,
+					PollsSeen:   4,
+				},
+				"202|HTTPS|104.16.132.229": {
+					PID:         202,
+					ProcessName: "slack",
+					Domain:      "104.16.132.229",
+					Protocol:    "HTTPS",
+					RXBytes:     1024,
+					TXBytes:     32,
+					PollsSeen:   2,
+				},
+			},
+		},
+	}
+
+	hardware := HardwareProfile{
+		Hostname:         "aas-MacBook-Pro.local",
+		OS:               "darwin",
+		Platform:         "macOS",
+		CPUModel:         "Apple M4 Max",
+		CPULogicalCores:  14,
+		CPUPhysicalCores: 14,
+		TotalMemoryGB:    36,
+	}
+	summary := Summary{
+		Running:                true,
+		TrackedProcessCount:    2,
+		TrackedDomainCount:     2,
+		TrackedConnectionCount: 2,
+	}
+
+	payload := u.buildPayload(endedAt, hardware, summary)
+
+	if len(payload.Processes) != 2 {
+		t.Fatalf("len(payload.Processes) = %d, want 2", len(payload.Processes))
+	}
+	if len(payload.Domains) != 2 {
+		t.Fatalf("len(payload.Domains) = %d, want 2", len(payload.Domains))
+	}
+	if len(payload.Connections) != 2 {
+		t.Fatalf("len(payload.Connections) = %d, want 2", len(payload.Connections))
+	}
+	if payload.Domains[1].Domain != "104.16.132.229" {
+		t.Fatalf("payload.Domains[1].Domain = %q, want unresolved public IP to be preserved", payload.Domains[1].Domain)
+	}
+	if payload.Connections[1].Domain != "104.16.132.229" {
+		t.Fatalf("payload.Connections[1].Domain = %q, want unresolved public IP to be preserved", payload.Connections[1].Domain)
+	}
+}
+
 func TestUploaderSendPostsMachineIDHeaderAndJSONBody(t *testing.T) {
 	var gotHeader string
 	var gotPayload watcherUploadPayload

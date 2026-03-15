@@ -355,9 +355,9 @@ func (u *uploader) buildPayload(now time.Time, hardware HardwareProfile, summary
 			TotalRXBytes:           u.window.totalRXBytes,
 			TotalTXBytes:           u.window.totalTXBytes,
 		},
-		Processes:   topUploadProcesses(u.window.processes, 12),
-		Domains:     topUploadDomains(u.window.domains, 20),
-		Connections: topUploadConnections(u.window.connections, 20),
+		Processes:   allUploadProcesses(u.window.processes),
+		Domains:     allUploadDomains(u.window.domains),
+		Connections: allUploadConnections(u.window.connections),
 	}
 }
 
@@ -412,7 +412,7 @@ func normalizeHardwareLabel(value string) string {
 	return strings.Trim(value, "_")
 }
 
-func topUploadProcesses(records map[int32]*processUploadRecord, limit int) []processUploadRecord {
+func allUploadProcesses(records map[int32]*processUploadRecord) []processUploadRecord {
 	if len(records) == 0 {
 		return nil
 	}
@@ -439,13 +439,10 @@ func topUploadProcesses(records map[int32]*processUploadRecord, limit int) []pro
 		return items[i].AverageCPU > items[j].AverageCPU
 	})
 
-	if limit > len(items) {
-		limit = len(items)
-	}
-	return items[:limit]
+	return items
 }
 
-func topUploadDomains(records map[string]*domainUploadRecord, limit int) []domainUploadRecord {
+func allUploadDomains(records map[string]*domainUploadRecord) []domainUploadRecord {
 	if len(records) == 0 {
 		return nil
 	}
@@ -455,9 +452,6 @@ func topUploadDomains(records map[string]*domainUploadRecord, limit int) []domai
 		if record == nil {
 			continue
 		}
-		if normalizeResolvedHost(record.DisplayName) == "" && isPublicIP(record.Domain) {
-			continue
-		}
 		items = append(items, *record)
 	}
 
@@ -470,13 +464,10 @@ func topUploadDomains(records map[string]*domainUploadRecord, limit int) []domai
 		return left > right
 	})
 
-	if limit > len(items) {
-		limit = len(items)
-	}
-	return items[:limit]
+	return items
 }
 
-func topUploadConnections(records map[string]*connectionUploadRecord, limit int) []connectionUploadRecord {
+func allUploadConnections(records map[string]*connectionUploadRecord) []connectionUploadRecord {
 	if len(records) == 0 {
 		return nil
 	}
@@ -486,9 +477,6 @@ func topUploadConnections(records map[string]*connectionUploadRecord, limit int)
 		if record == nil {
 			continue
 		}
-		if normalizeResolvedHost(record.DisplayName) == "" && isPublicIP(record.Domain) {
-			continue
-		}
 		items = append(items, *record)
 	}
 
@@ -501,8 +489,5 @@ func topUploadConnections(records map[string]*connectionUploadRecord, limit int)
 		return left > right
 	})
 
-	if limit > len(items) {
-		limit = len(items)
-	}
-	return items[:limit]
+	return items
 }
