@@ -21,9 +21,20 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 	--mount=type=cache,target=/root/.cache/go-build \
 	GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o /out/dialtone-watcher .
 
-FROM gcr.io/distroless/static-debian12:nonroot AS runtime
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	bash \
+	ca-certificates \
+	curl \
+	dnsutils \
+	iproute2 \
+	procps \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& useradd --create-home --home-dir /home/app --shell /bin/bash app
 ENV XDG_CACHE_HOME=/tmp/.cache
 COPY --from=build /out/dialtone-watcher /app/dialtone-watcher
+RUN chown -R app:app /app /home/app
+USER app
 ENTRYPOINT ["/app/dialtone-watcher"]
 CMD ["help"]

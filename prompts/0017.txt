@@ -1,0 +1,10 @@
+look at Dockerfile and can you run fly cli commands to deploy to 1 machine on flyio this binary and
+  have it run in test mode?
+
+there is info in linux.md
+
+good, can you change test mode for linux and fly to do more stuff. It has a simple thread making http
+  connections right? But add more logic to do things that will create cpu load and network activities.
+  You can be creative. install small thing? do package updates? but remember this fly machine has
+  limited resources. you can increase it's ram to 2GB
+
