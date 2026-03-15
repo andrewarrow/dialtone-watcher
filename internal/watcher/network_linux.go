@@ -3,8 +3,12 @@
 package watcher
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"io"
+	"net/netip"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -16,7 +20,8 @@ import (
 )
 
 func collectNetworkSamples() (map[string]networkObservation, error) {
-	byteSamples := collectLinuxSocketByteSamples()
+	tcpByteSamples := collectLinuxSocketByteSamples()
+	udpByteSamples := collectLinuxUDPFlowSamples()
 
 	processes, err := process.Processes()
 	if err != nil {
@@ -47,11 +52,21 @@ func collectNetworkSamples() (map[string]networkObservation, error) {
 				host,
 				connection.Raddr.Port,
 			)
+			sample := tcpByteSamples[key]
+			if connection.Type == syscall.SOCK_DGRAM {
+				sample = udpByteSamples[linuxFlowTupleKey(
+					connection.Type,
+					connection.Laddr.IP,
+					connection.Laddr.Port,
+					host,
+					connection.Raddr.Port,
+				)]
+			}
 			observations[key] = networkObservation{
 				PID:      proc.Pid,
 				Domain:   host,
 				Protocol: inferSocketProtocol(connection.Type, connection.Raddr.Port),
-				Sample:   byteSamples[key],
+				Sample:   sample,
 			}
 		}
 	}
@@ -70,6 +85,27 @@ func collectLinuxSocketByteSamples() map[string]networkConnectionSample {
 	}
 
 	return parseLinuxSocketByteSamples(string(output))
+}
+
+func collectLinuxUDPFlowSamples() map[string]networkConnectionSample {
+	samples := make(map[string]networkConnectionSample)
+	for _, path := range []string{"/proc/net/nf_conntrack", "/proc/net/ip_conntrack"} {
+		file, err := os.Open(path)
+		if err != nil {
+			continue
+		}
+
+		parsed := parseLinuxConntrackSamples(file)
+		_ = file.Close()
+		if len(parsed) == 0 {
+			continue
+		}
+		for key, sample := range parsed {
+			samples[key] = sample
+		}
+		return samples
+	}
+	return samples
 }
 
 func parseLinuxSocketByteSamples(raw string) map[string]networkConnectionSample {
@@ -231,4 +267,128 @@ func parseLinuxSocketEndpoint(value string) (string, uint32, bool) {
 	}
 
 	return host, uint32(port), true
+}
+
+func parseLinuxConntrackSamples(reader io.Reader) map[string]networkConnectionSample {
+	samples := make(map[string]networkConnectionSample)
+	scanner := bufio.NewScanner(reader)
+	buffer := make([]byte, 0, 64*1024)
+	scanner.Buffer(buffer, 1024*1024)
+
+	for scanner.Scan() {
+		recordSamples := parseLinuxConntrackLine(scanner.Text())
+		for key, sample := range recordSamples {
+			samples[key] = sample
+		}
+	}
+
+	return samples
+}
+
+func parseLinuxConntrackLine(line string) map[string]networkConnectionSample {
+	fields := strings.Fields(strings.TrimSpace(line))
+	if len(fields) < 10 {
+		return nil
+	}
+
+	protocol := fields[0]
+	offset := 0
+	if protocol == "ipv4" || protocol == "ipv6" {
+		if len(fields) < 11 {
+			return nil
+		}
+		protocol = fields[2]
+		offset = 2
+	}
+
+	if protocol != "udp" {
+		return nil
+	}
+
+	attrs := make(map[string][]string)
+	for _, field := range fields[offset+3:] {
+		key, value, ok := strings.Cut(field, "=")
+		if !ok {
+			continue
+		}
+		attrs[key] = append(attrs[key], value)
+	}
+
+	origSrc, origDst, origSport, origDport, origBytes, ok := parseLinuxConntrackTuple(attrs, 0)
+	if !ok {
+		return nil
+	}
+	replySrc, replyDst, replySport, replyDport, replyBytes, ok := parseLinuxConntrackTuple(attrs, 1)
+	if !ok {
+		return nil
+	}
+
+	return map[string]networkConnectionSample{
+		linuxFlowTupleKey(syscall.SOCK_DGRAM, origSrc, origSport, origDst, origDport): {
+			RXBytes: replyBytes,
+			TXBytes: origBytes,
+		},
+		linuxFlowTupleKey(syscall.SOCK_DGRAM, replySrc, replySport, replyDst, replyDport): {
+			RXBytes: origBytes,
+			TXBytes: replyBytes,
+		},
+	}
+}
+
+func parseLinuxConntrackTuple(attrs map[string][]string, index int) (string, string, uint32, uint32, uint64, bool) {
+	src := linuxConntrackAttr(attrs, "src", index)
+	dst := linuxConntrackAttr(attrs, "dst", index)
+	sportValue := linuxConntrackAttr(attrs, "sport", index)
+	dportValue := linuxConntrackAttr(attrs, "dport", index)
+	bytesValue := linuxConntrackAttr(attrs, "bytes", index)
+	if src == "" || dst == "" || sportValue == "" || dportValue == "" || bytesValue == "" {
+		return "", "", 0, 0, 0, false
+	}
+
+	src = normalizeLinuxConntrackHost(src)
+	dst = normalizeLinuxConntrackHost(dst)
+	if src == "" || dst == "" {
+		return "", "", 0, 0, 0, false
+	}
+
+	sport, err := strconv.ParseUint(sportValue, 10, 32)
+	if err != nil {
+		return "", "", 0, 0, 0, false
+	}
+	dport, err := strconv.ParseUint(dportValue, 10, 32)
+	if err != nil {
+		return "", "", 0, 0, 0, false
+	}
+	bytesCount, err := strconv.ParseUint(bytesValue, 10, 64)
+	if err != nil {
+		return "", "", 0, 0, 0, false
+	}
+
+	return src, dst, uint32(sport), uint32(dport), bytesCount, true
+}
+
+func linuxConntrackAttr(attrs map[string][]string, key string, index int) string {
+	values := attrs[key]
+	if len(values) <= index {
+		return ""
+	}
+	return values[index]
+}
+
+func linuxFlowTupleKey(socketType uint32, localHost string, localPort uint32, remoteHost string, remotePort uint32) string {
+	return fmt.Sprintf("%d|%s|%d|%s|%d", socketType, localHost, localPort, remoteHost, remotePort)
+}
+
+func normalizeLinuxConntrackHost(host string) string {
+	host = strings.TrimSpace(strings.Trim(host, "[]"))
+	if host == "" {
+		return ""
+	}
+	if zoneIdx := strings.Index(host, "%"); zoneIdx != -1 {
+		host = host[:zoneIdx]
+	}
+	if addr, err := netip.ParseAddr(host); err == nil {
+		return addr.String()
+	}
+	return strings.ToLower(host)
 }
