@@ -1,0 +1,19 @@
+read the README.md and write me a good 200 word Show HN: post. Make it in the style of a two person
+  dev team. It should start with "Hi HN we are Andrew and Dex." Explain how this project started and
+  some interesting things to get other devs excited about it. Explain what we have so far and where
+  it's going. Use good writing like expert human authors not normal AI writing. Never use a dash.
+  Mention we have all the prompts used in the repo and this project is also a good demo of modern AI
+  coding. Include some funny banter between us. Make it seem like you and I were a team and we built
+  this together because that's true.
+
+make it 400 words and follow:
+
+> > Strong introductory sentence about who you are and what you're making.
+>> > Three dot points about what it does.
+>> > Origin story - why you built it, what problem you/someone experienced that motivated you to make this.
+>> > Demonstration of it working (video is great)
+>> > Technology implementation – the tech stack and why you chose it, any secret sauce, breakthrough innovations, aha moments (this is what HN cares most about)
+>> > What you learned/overcame in the journey
+>> > What testing people should do and what feedback should focus on.
+
+you need to sell this better. explain the goal is to get 20000 machines all running this and THEN that demo can become real. Explain how you'll be able to see "am I normal?" like i have a macbook pro with 14 cores and 36GB memory and I run docker but why do other devs use so much less cpu and memory than me? Or why do I have this other weird process and network calls? Make the devs want to install and run this because they see the value. Mention also the future and how with enough people running it we can spot true spywear before it spreads too far.
