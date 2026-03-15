@@ -19,6 +19,7 @@ Why:
 - Region: `sjc`
 - Machine count: `1`
 - Machine ID from this deploy: `8d31e4fe232508`
+- Current VM memory target: `2 GB`
 
 ## Files
 
@@ -147,6 +148,7 @@ Relevant behavior from the repo:
 
 - upload interval defaults to `15s` in test mode
 - Linux test traffic generation is enabled in test mode
+- Linux test mode now creates mixed HTTPS, HTTP, DNS, UDP DNS, and short CPU bursts
 
 That makes Fly useful for Linux-side smoke testing instead of only printing `help`.
 
