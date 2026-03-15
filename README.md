@@ -179,9 +179,73 @@ Example shape:
     "tracked_connection_count": 24,
     "total_rx_bytes": 11264000,
     "total_tx_bytes": 786432
-  }
+  },
+  "processes": [
+    {
+      "pid": 61421,
+      "name": "firefox",
+      "command": "/Applications/Firefox.app/Contents/MacOS/firefox",
+      "average_cpu_percent": 2.57,
+      "peak_cpu_percent": 7.11,
+      "average_memory_rss_mb": 843.0,
+      "peak_memory_rss_mb": 912.4,
+      "polls_seen": 60
+    },
+    {
+      "pid": 83479,
+      "name": "com.apple.Virtualization.VirtualMachine",
+      "command": "/System/Library/Frameworks/Virtualization.framework/...",
+      "average_cpu_percent": 5.93,
+      "peak_cpu_percent": 11.26,
+      "average_memory_rss_mb": 6900.0,
+      "peak_memory_rss_mb": 7024.2,
+      "polls_seen": 60
+    }
+  ],
+  "domains": [
+    {
+      "domain": "104.16.132.229",
+      "display_name": "cloudflare.com",
+      "rx_bytes": 11239424,
+      "tx_bytes": 51200,
+      "polls_seen": 18
+    },
+    {
+      "domain": "microsoft.com",
+      "rx_bytes": 997171,
+      "tx_bytes": 146944,
+      "polls_seen": 16
+    }
+  ],
+  "connections": [
+    {
+      "pid": 61421,
+      "process_name": "firefox",
+      "domain": "104.16.132.229",
+      "display_name": "cloudflare.com",
+      "protocol": "HTTPS",
+      "rx_bytes": 11239424,
+      "tx_bytes": 51200,
+      "polls_seen": 18
+    },
+    {
+      "pid": 70214,
+      "process_name": "com.docker.backend",
+      "domain": "microsoft.com",
+      "protocol": "HTTPS",
+      "rx_bytes": 997171,
+      "tx_bytes": 146944,
+      "polls_seen": 16
+    }
+  ]
 }
 ```
+
+In the actual implementation, those arrays are bounded to keep uploads predictable:
+
+- `processes`: top 12
+- `domains`: top 20
+- `connections`: top 20
 
 The interval is configurable:
 
