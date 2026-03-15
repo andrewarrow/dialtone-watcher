@@ -34,6 +34,7 @@ type connectionRecord struct {
 type service struct {
 	mu             sync.Mutex
 	hardware       HardwareProfile
+	uploader       *uploader
 	polls          uint64
 	pids           map[int32]*processRecord
 	domains        map[string]*domainRecord
@@ -68,6 +69,11 @@ func RunDaemon(options RunOptions) error {
 		return err
 	}
 
+	machineID, err := MachineID()
+	if err != nil {
+		return err
+	}
+
 	pidNamespace := currentPIDNamespace()
 
 	if err := writeStatus(Status{PID: os.Getpid(), PIDNamespace: pidNamespace}); err != nil {
@@ -76,6 +82,7 @@ func RunDaemon(options RunOptions) error {
 
 	svc := &service{
 		hardware:       hardware,
+		uploader:       newUploader(machineID, options),
 		pids:           make(map[int32]*processRecord),
 		domains:        make(map[string]*domainRecord),
 		connections:    make(map[string]*connectionRecord),
@@ -105,7 +112,7 @@ func RunDaemon(options RunOptions) error {
 			}
 		case <-stop:
 			signal.Stop(stop)
-			if err := svc.persist(false); err != nil {
+			if err := svc.shutdown(); err != nil {
 				return err
 			}
 			return removeStatus()
@@ -134,33 +141,23 @@ func (s *service) pollOnce() error {
 
 	s.mu.Lock()
 	s.polls++
+	if s.uploader != nil {
+		s.uploader.incrementPoll(now)
+	}
 	err = s.persist(true)
+	summary := s.currentSummaryLocked(true)
+	shouldUpload := s.uploader != nil && s.uploader.shouldUpload(now)
 	s.mu.Unlock()
+	if shouldUpload {
+		if uploadErr := s.uploader.flush(now, s.hardware, summary); uploadErr != nil {
+			_ = uploadErr
+		}
+	}
 	return err
 }
 
 func (s *service) persist(running bool) error {
-	summaryPID := 0
-	if running {
-		summaryPID = os.Getpid()
-	}
-
-	summary := Summary{
-		PID:                    summaryPID,
-		PIDNamespace:           s.pidNamespace(running),
-		Running:                running,
-		PollCount:              s.polls,
-		TrackedProcessCount:    len(s.pids),
-		Hardware:               s.hardware,
-		TopProcess:             s.topProcess(),
-		TopProcesses:           s.topProcesses(6),
-		TrackedDomainCount:     len(s.domains),
-		TrackedConnectionCount: len(s.connections),
-		TopDomains:             s.topDomains(60),
-		TopConnections:         s.topConnections(20),
-	}
-
-	return writeSummary(summary)
+	return writeSummary(s.currentSummaryLocked(running))
 }
 
 func (s *service) pidNamespace(running bool) string {
@@ -195,6 +192,10 @@ func (s *service) pollProcessesLocked(processes []*process.Process, now time.Tim
 		if _, ok := current[pid]; !ok && now.Sub(record.LastSeen) > pollInterval*2 {
 			delete(s.pids, pid)
 		}
+	}
+
+	if s.uploader != nil {
+		s.uploader.recordProcesses(now, s.pids)
 	}
 }
 
@@ -235,6 +236,16 @@ func (s *service) pollDomainsLocked(observations map[string]networkObservation, 
 		connection.TXBytes += sample.TXBytes
 		connection.LastSeen = now
 		connection.PollsSeen++
+
+		if s.uploader != nil {
+			s.uploader.recordNetwork(now, networkObservation{
+				PID:         observation.PID,
+				Domain:      observation.Domain,
+				DisplayName: record.DisplayName,
+				ProcessName: connection.ProcessName,
+				Protocol:    observation.Protocol,
+			}, sample.RXBytes, sample.TXBytes, len(s.domains), len(s.connections))
+		}
 	}
 
 	for key := range s.networkSamples {
@@ -254,6 +265,39 @@ func (s *service) pollDomainsLocked(observations map[string]networkObservation, 
 			delete(s.connections, key)
 		}
 	}
+}
+
+func (s *service) currentSummaryLocked(running bool) Summary {
+	summaryPID := 0
+	if running {
+		summaryPID = os.Getpid()
+	}
+
+	return Summary{
+		PID:                    summaryPID,
+		PIDNamespace:           s.pidNamespace(running),
+		Running:                running,
+		PollCount:              s.polls,
+		TrackedProcessCount:    len(s.pids),
+		Hardware:               s.hardware,
+		TopProcess:             s.topProcess(),
+		TopProcesses:           s.topProcesses(6),
+		TrackedDomainCount:     len(s.domains),
+		TrackedConnectionCount: len(s.connections),
+		TopDomains:             s.topDomains(60),
+		TopConnections:         s.topConnections(20),
+	}
+}
+
+func (s *service) shutdown() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	summary := s.currentSummaryLocked(false)
+	if s.uploader != nil {
+		_ = s.uploader.flush(time.Now(), s.hardware, summary)
+	}
+	return writeSummary(summary)
 }
 
 func (s *service) topProcess() ProcessSnapshot {

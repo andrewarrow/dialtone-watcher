@@ -12,10 +12,12 @@ type networkConnectionSample struct {
 }
 
 type networkObservation struct {
-	PID      int32
-	Domain   string
-	Protocol string
-	Sample   networkConnectionSample
+	PID         int32
+	Domain      string
+	DisplayName string
+	ProcessName string
+	Protocol    string
+	Sample      networkConnectionSample
 }
 
 func inferProtocol(port uint16) string {
